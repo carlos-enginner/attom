@@ -3,9 +3,12 @@ package db
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"src/post_relay/config"
+	"src/post_relay/internal/dispatch"
 	"src/post_relay/internal/utils"
 
 	"github.com/jackc/pgx/v4"
@@ -56,4 +59,48 @@ func EnableNotify(conn *pgx.Conn) error {
 
 	fmt.Printf("Executed SQL file: %s\n", config.NOTIFY_STRUCTURED)
 	return nil
+}
+
+func StartNotifications() {
+	conn, err := Connect()
+	// Conectar ao banco de dados
+	if err != nil {
+		log.Fatal("Error connecting to database:", err)
+	}
+	defer conn.Close(context.Background())
+
+	// Escutar notificações
+	if err := ListenForNotifications(conn); err != nil {
+		log.Fatal("Error listening for notifications:", err)
+	}
+
+	for {
+		// Esperar por notificações
+		notification, err := conn.WaitForNotification(context.Background())
+		if err != nil {
+			log.Fatal("Error waiting for notification:", err)
+		}
+
+		// Exibir notificação
+		fmt.Printf("Received notification: %s\n", notification.Payload)
+
+		// Parse JSON da notificação
+		var notificationJSON map[string]interface{}
+		if err := json.Unmarshal([]byte(notification.Payload), &notificationJSON); err != nil {
+			log.Fatal("Error parsing notification payload:", err)
+		}
+
+		// Enviar para API
+		payload, err := dispatch.MakePayload(notificationJSON)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
+		if err := dispatch.SendMessage(payload); err != nil {
+			log.Println("Error sending to API:", err)
+		} else {
+			fmt.Println("Notification sent to API successfully!")
+		}
+	}
 }

@@ -2,7 +2,7 @@ package win64
 
 import (
 	"fmt"
-	"src/post_relay/cmd"
+	"src/post_relay/internal/db"
 
 	"github.com/kardianos/service"
 )
@@ -18,7 +18,7 @@ func (p *Program) Start(s service.Service) error {
 
 // run contém a lógica que o serviço vai executar enquanto estiver rodando
 func (p *Program) run() {
-	cmd.DatabaseNotificationListenCmd().Execute()
+	db.StartNotifications()
 }
 
 // Stop define o que acontece quando o serviço é parado
