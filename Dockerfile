@@ -15,7 +15,7 @@ COPY . .
 RUN go install github.com/air-verse/air@latest && \
     CGO_ENABLED=0 go install -ldflags "-s -w -extldflags '-static'" github.com/go-delve/delve/cmd/dlv@latest
 
-RUN echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt update && apt install goreleaser
+RUN echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt update && apt install -y goreleaser
 
 EXPOSE 8080
 EXPOSE 2345

@@ -26,6 +26,7 @@ dump-esus.sql
 # Diretórios de cache
 .cache/
 pgdata/
+dist
 
 # Diretórios de arquivos temporários
 tmp/
