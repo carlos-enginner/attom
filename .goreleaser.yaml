@@ -8,6 +8,9 @@
 
 version: 2
     
+archives:
+  - format: binary
+
 source:
   # Whether this pipe is enabled or not.
   enabled: false
