@@ -7,6 +7,10 @@
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
 version: 2
+    
+source:
+  # Whether this pipe is enabled or not.
+  enabled: false
 
 before:
   hooks:
@@ -32,3 +36,5 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^pgdata:"
+
+
