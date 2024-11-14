@@ -8,5 +8,5 @@
 # goreleaser release
 
 # GITHUB_TOKEN=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
-goreleaser release 
+goreleaser release --clean
 
