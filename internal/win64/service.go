@@ -2,6 +2,7 @@ package win64
 
 import (
 	"fmt"
+	"src/post_relay/cmd"
 
 	"github.com/kardianos/service"
 )
@@ -17,11 +18,7 @@ func (p *Program) Start(s service.Service) error {
 
 // run contém a lógica que o serviço vai executar enquanto estiver rodando
 func (p *Program) run() {
-	for {
-		fmt.Println("O serviço está rodando em background.")
-		// Aqui você pode colocar a lógica do seu serviço (como leitura de filas, escuta de notificações, etc.)
-		// Deixe o serviço rodando continuamente.
-	}
+	cmd.DatabaseNotificationListenCmd().Execute()
 }
 
 // Stop define o que acontece quando o serviço é parado
