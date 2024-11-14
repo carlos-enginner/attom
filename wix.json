@@ -1,0 +1,51 @@
+{
+    "product": "Attom",
+    "company": "NOBILIS TECH",
+    "license": "LICENSE",
+    "upgrade-code": "",
+    "files": {
+      "guid": "",
+      "items": [
+        "tmp/push-relay.exe"
+      ]
+    },
+    "directories": [
+      "assets"
+    ],
+    "env": {
+      "guid": "",
+      "vars": [
+        {
+          "name": "some",
+          "value": "value",
+          "permanent": "no",
+          "system": "no",
+          "action": "set",
+          "part": "last"
+        }
+      ]
+    },
+    "shortcuts": {
+      "guid": "",
+      "items": [
+        {
+          "name": "Attom",
+          "description": "Attom",
+          "target": "C:\\attom\\push-relay.exe",
+          "wdir": "C:\\attom",
+          "icon":"ico.ico"
+        }
+      ]
+    },
+    "hooks": [
+      {"when": "install", "command": "sc.exe create AttomSvc binPath=\"C:\\attom\\push-relay.exe\" type=share start=auto DisplayName=\"Attom\""},
+      {"when": "install", "command": "sc.exe start AttomSvc"},
+      {"when": "uninstall", "command": "sc.exe delete AttomSvc"}
+    ],
+    "choco": {
+      "description": "Attom",
+      "project-url": "https://github.com/mh-cbon/go-msi/tree/master/testing",
+      "tags": "hello",
+      "license-url": "https://github.com/mh-cbon/go-msi/blob/master/LICENSE"
+    }
+  }

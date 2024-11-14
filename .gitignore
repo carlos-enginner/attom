@@ -1,0 +1,53 @@
+# Arquivos e pastas de build do Go
+bin/
+pkg/
+vendor/
+
+# Arquivos e pastas gerados pela execução de testes
+*.test
+*.out
+
+# Arquivos de dependências baixadas (caso você esteja usando o módulo Go)
+go.sum
+go.mod
+
+# Arquivos de configuração do editor/IDE
+.idea/
+.vscode/
+
+# Arquivos de log
+*.log
+
+# Arquivos de cache de build
+*.cache
+*.tmp
+dump-esus.sql
+
+# Diretórios de cache
+.cache/
+pgdata/
+
+# Diretórios de arquivos temporários
+tmp/
+
+# Arquivos de backup do editor
+*~
+*.bak
+*.swp
+*.swo
+
+# Arquivos de configuração do sistema operacional
+.DS_Store         # MacOS
+Thumbs.db         # Windows
+desktop.ini       # Windows
+
+# Arquivos específicos do GoLand (IDE Go)
+.idea/
+
+# Arquivos de logs de ferramentas de linting e outros
+*.lint
+*.err
+
+# Arquivos gerados por testes (exemplo: cobertura de testes)
+*.coverprofile
+*.testprofile

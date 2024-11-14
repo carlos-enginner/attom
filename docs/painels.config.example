@@ -1,0 +1,74 @@
+1 -
+PROCEDIMENTOS:
+CHAMADA NO PAINEL: SALA DE PROCEDIMENTOS (VER API PAINEL)
+SERVIÇO: 9 - ADM. MEDICAMENTO,2- NEBULIZAÇÃO, 8 - CURATIVO
+CBO: QUALQUER
+
+2 -
+EXAMES:
+CHAMADA NO PAINEL: SALA DE EXAMES (VER API PAINEL)
+SERVIÇO: 5 - EXAMES
+CBO: QUALQUER
+
+3 -
+VACINA -
+CHAMADA NO PAINEL: SALA DE VACINAS (VER API PAINEL)
+SERVIÇO: 3 - VACINA
+CBO: QUALQUER CBO
+
+4 -
+TRIAGEM -
+CHAMADA NO PAINEL: SALA DE TRIAGEM (VER API PAINEL)
+SERVIÇO: 7 - ESCUTA INICIAL
+CBO: 3222XX
+
+5 -
+CONSULTORIOS - MÉDICOS, OUTRAS ESPECIALIDADES (ENFERMEIROS, NUTRICIONITAS, PSCICOLOGOS, TERAPEURAS...)
+CHAMADA NO PAINEL: CONSULTORIO (VER API PAINEL)
+SERVIÇO: 1 - DEMANDA ESPONTÂNEA, 6 - AGENDADO
+CBO: 2251xx, 2252xx, 2235xx, 2515xx, 2239XX, 2237XX
+
+6 -
+CONSULTORIO ODONTOLOGICO -
+CHAMADA NO PAINEL: CONSULTORIO ODONTOLOGICO (VER API PAINEL)
+SERVIÇO: 10 - ODONTOLOGIA, 11 - ENDODONTIA, 12 - PERIODONTIA, 15 -ESTOMATOLOGIA, 16 -IMPLANTODONTIA, 18 -ORTODONTIA/ORTOPEDIA, 19 - PRÓTESE DENTÁRIA
+CBO: 2232XX, 322425,322415
+
+
+==============
+painels_config
+==============
+
+label: procedimento
+servico: [9,2,8]
+cbo: []
+painel_referral: {id: "", local_atendimento: ""}
+
+label: exames
+servico: [5]
+cbo: []
+painel_referral: {id: "", local_atendimento: ""}
+
+tipo: vacina
+label: [3]
+cbo: []
+painel_referral: {id: "", local_atendimento: ""}
+
+label: triagem
+servico: [7]
+cbo: [3222]
+painel_referral: {id: "", local_atendimento: ""}
+
+tipo: consultorio_medico
+servico: [1,6]
+cbo: [2251,2252,2235,2239,2237]
+painel_referral: {id: "", local_atendimento: ""}
+
+tipo: consultorio_odontologico
+servico: [10,11,12,15,16,18,19]
+cbo: [2232,322425,322415]
+painel_referral: {id: "", local_atendimento: ""}
+
+
+
+

@@ -1,0 +1,22 @@
+builds:
+- os: windows
+  arch: amd64
+  binary: attom.exe
+  goos: windows
+  goarch: amd64
+  env:
+    - CGO_ENABLED=0
+  main: ./main.go
+
+artifact_templates:
+- name: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}.msi"
+  format: msi
+  extra_files:
+    - src: install.bat
+      dest: .
+
+# Release não é necessário se não estiver usando um repositório remoto
+# release:
+#   github:
+#     owner: seu-usuario
+#     name: seu-repositorio
