@@ -31,9 +31,9 @@ func (p *Program) Stop(s service.Service) error {
 func NewService() (service.Service, error) {
 	prg := &Program{}
 	svcConfig := &service.Config{
-		Name:        "Attom",                        // Nome do serviço
-		DisplayName: "Attom",                        // Nome para exibição no Gerenciador de Serviços
-		Description: "Este é um serviço Go simples", // Descrição do serviço
+		Name:        "Attom",                              // Nome do serviço
+		DisplayName: "Attom",                              // Nome para exibição no Gerenciador de Serviços
+		Description: "Este é um serviço Go simples-teste", // Descrição do serviço
 	}
 
 	// Cria e retorna a instância do serviço
