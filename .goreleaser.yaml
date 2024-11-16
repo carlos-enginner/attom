@@ -29,7 +29,7 @@ builds:
     goarch: 
       - amd64
     ldflags:
-      "-s -w -X config.Version={{.Version}} -X config.Commit={{.Commit}} -X config.Date={{.Date}}"
+      "-s -w -X src/post_relay/config.Version={{.Version}} -X src/post_relay/config.Commit={{.Commit}} -X src/post_relay/config.Date={{.Date}}"
 
 changelog:
   sort: asc
