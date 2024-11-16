@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Define a última tag de versão existente
+TAG=$(git describe --tags --abbrev=0)  # Pega a última tag do repositório
+if [ -z "$TAG" ]; then
+  # Se não existir nenhuma tag, define a versão inicial como v0.1.0
+  TAG="v0.1.0"
+fi
+
+# Perguntar ao usuário o tipo de mudança (major, minor ou patch)
+echo "Escolha o tipo de mudança para a versão (major, minor, patch):"
+read -p "Digite: major | minor | patch: " CHANGE_TYPE
+
+# Valida se o tipo de mudança é válido
+if [[ "$CHANGE_TYPE" != "major" && "$CHANGE_TYPE" != "minor" && "$CHANGE_TYPE" != "patch" ]]; then
+  echo "Tipo de mudança inválido! Por favor, escolha entre major, minor ou patch."
+  exit 1
+fi
+
+# Incrementa a versão de acordo com a escolha do usuário
+NEW_TAG=$(semver bump $CHANGE_TYPE $TAG)
+
+# Cria a tag com a nova versão
+git tag $NEW_TAG
+
+# Faz o push da tag para o repositório remoto
+git push origin $NEW_TAG
+
+# Verificar se o GoReleaser está instalado
+if ! command -v goreleaser &> /dev/null; then
+  echo "GoReleaser não encontrado. Certifique-se de que o GoReleaser está instalado."
+  exit 1
+fi
+
+# Executa o GoReleaser para gerar a release
+goreleaser release --clean
