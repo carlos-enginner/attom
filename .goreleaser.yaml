@@ -30,7 +30,7 @@ builds:
       - amd64
   - main: ./main.go
     ldflags:
-      - "-X main.Version={{.Version}}"
+      - "-X main.Version={{.current_tag}}"
 
 changelog:
   sort: asc
