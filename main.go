@@ -6,6 +6,8 @@ import (
 	"src/post_relay/cmd"
 )
 
+var Version = ""
+
 func main() {
 	if err := cmd.Execute(); err != nil {
 		fmt.Println("Error executing command:", err)
