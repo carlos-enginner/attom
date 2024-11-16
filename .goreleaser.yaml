@@ -28,9 +28,8 @@ builds:
       - windows
     goarch: 
       - amd64
-  - main: ./main.go
     ldflags:
-      - "-X main.Version={{.current_tag}}"
+      "-X main.Version={{.current_tag}}"
 
 changelog:
   sort: asc
