@@ -28,6 +28,9 @@ builds:
       - windows
     goarch: 
       - amd64
+  - main: ./main.go
+    ldflags:
+      - "-X main.Version={{.Version}}"
 
 changelog:
   sort: asc
