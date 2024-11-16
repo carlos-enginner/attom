@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"os"
 	"src/post_relay/cmd"
-	"src/post_relay/config"
 )
 
-var Version = ""
+var Version string
 
 func main() {
-	config.LogVersion()
+	fmt.Printf("Version: %s", Version)
 	if err := cmd.Execute(); err != nil {
 		fmt.Println("Error executing command:", err)
 		os.Exit(1)
