@@ -40,7 +40,9 @@ echo "Versão atualizada para $new_version"
 
 # Cria a nova tag no Git
 git tag -a "$new_version" -m "Release versão $new_version"
-git push origin "$new_version"
+git push origin "$new_version" && echo "Tag $new_version enviada para o repositório com sucesso!" || { echo "Falha ao empurrar as tags. Abortando."; exit 1; }
+
+sleep 1
 
 # Pergunta ao usuário se deseja realizar o release
 read -p "Deseja fazer o release agora? (y/n): " resposta
