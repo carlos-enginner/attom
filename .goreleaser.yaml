@@ -29,7 +29,7 @@ builds:
     goarch: 
       - amd64
     ldflags:
-      "-X main.Version={{.current_tag}}"
+      "-X main.Version={{.Version}}"
 
 changelog:
   sort: asc

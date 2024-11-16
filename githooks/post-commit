@@ -32,9 +32,6 @@ fi
 # Construa a nova versão
 new_version="v$major.$minor.$patch"
 
-# Atualiza a versão no arquivo version.txt
-echo "$new_version" > version.txt
-
 # Exibe a nova versão
 echo "Versão atualizada para $new_version"
 
@@ -42,13 +39,13 @@ echo "Versão atualizada para $new_version"
 git tag -a "$new_version" -m "Release versão $new_version"
 git push origin "$new_version" && echo "Tag $new_version enviada para o repositório com sucesso!" || { echo "Falha ao empurrar as tags. Abortando."; exit 1; }
 
-sleep 1
+# sleep 1
 
-# Pergunta ao usuário se deseja realizar o release
-read -p "Deseja fazer o release agora? (y/n): " resposta
+# # Pergunta ao usuário se deseja realizar o release
+# read -p "Deseja fazer o release agora? (y/n): " resposta
 
-if [[ "$resposta" == "y" || "$resposta" == "Y" ]]; then
-  # Se a resposta for 'y', executa o GoReleaser para gerar o release
-  echo "Fazendo o release..."
-  bash scripts/new-release
-fi
+# if [[ "$resposta" == "y" || "$resposta" == "Y" ]]; then
+#   # Se a resposta for 'y', executa o GoReleaser para gerar o release
+#   echo "Fazendo o release..."
+#   bash scripts/new-release
+# fi
