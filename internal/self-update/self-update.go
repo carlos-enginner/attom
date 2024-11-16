@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
+	"strings"
 )
 
 // Função para substituir o binário atual pelo novo
@@ -90,10 +92,10 @@ func DownloadLatestRelease(owner, repo, token, targetPath string) error {
 	}
 
 	// Encontrar o binário correto na lista de assets
+	goos := runtime.GOOS
 	var releaseID uint64
 	for _, asset := range releaseData.Assets {
-		// Você pode adaptar isso para o nome do binário que você precisa
-		if asset.Name == "attom_1.0.0_linux_amd64" { // Ajuste para o nome do seu binário
+		if strings.Contains(asset.Name, goos) {
 			releaseID = asset.Id
 			break
 		}
