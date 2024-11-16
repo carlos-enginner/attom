@@ -20,7 +20,7 @@ before:
     - go generate ./...
 
 builds:
-    - env:
+  - env:
       - CGO_ENABLED=0
       # - GITHUB_TOKEN="{{ .Env.GITHUB_TOKEN }}"
     goos:
