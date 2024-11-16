@@ -8,39 +8,40 @@ if [ -z "$TAG" ]; then
   TAG="v0.1.0"
 fi
 
-# Pergunta interativa para o tipo de mudança (major, minor, patch)
-echo "Última tag: $TAG"
-echo "Escolha o tipo de mudança para a versão (major, minor ou patch):"
-echo "Digite major | minor | patch"
-read -p "Tipo de mudança: " CHANGE_TYPE
+# Remove o "v" da tag para facilitar a manipulação
+version=${TAG#v}
 
-# Valida o tipo de mudança
-if [[ "$CHANGE_TYPE" != "major" && "$CHANGE_TYPE" != "minor" && "$CHANGE_TYPE" != "patch" ]]; then
-  echo "Erro: Tipo de mudança inválido! Apenas major, minor ou patch são aceitos."
-  exit 1
+# Separa a versão em major, minor e patch
+IFS='.' read -r major minor patch <<< "$version"
+
+# Recupera a última mensagem de commit
+commit_msg=$(git log -1 --pretty=%B)
+
+# Determina o tipo de incremento baseado na mensagem de commit
+if [[ "$commit_msg" == *"BREAKING CHANGE"* ]] || [[ "$commit_msg" == *"chore:"* ]]; then
+  major=$((major + 1))
+  minor=0
+  patch=0
+elif [[ "$commit_msg" == *"feat:"* ]]; then
+  minor=$((minor + 1))
+  patch=0
+elif [[ "$commit_msg" == *"fix:"* ]]; then
+  patch=$((patch + 1))
 fi
 
-# Usa o comando `semver` para calcular a nova versão
-NEW_TAG=$(semver bump $CHANGE_TYPE $TAG)
-echo "Nova versão: $NEW_TAG"
+# Construa a nova versão
+new_version="v$major.$minor.$patch"
+
+# Atualiza a versão no arquivo version.txt
+echo "$new_version" > version.txt
+
+# Exibe a nova versão
+echo "Versão atualizada para $new_version"
 
 # Cria a nova tag no Git
-git tag $NEW_TAG
-git push origin $NEW_TAG
+git tag -a "$new_version" -m "Release versão $new_version"
+git push --tags
 
-# Verifica se o GoReleaser está instalado
-if ! command -v goreleaser &> /dev/null; then
-  echo "Erro: GoReleaser não encontrado. Certifique-se de que o GoReleaser está instalado."
-  exit 1
-fi
-
-# Executa o GoReleaser para criar a release
-echo "Executando GoReleaser..."
+# Executa o GoReleaser para gerar o release
 goreleaser release --rm-dist
 
-if [ $? -ne 0 ]; then
-  echo "Erro ao executar GoReleaser!"
-  exit 1
-fi
-
-echo "Release e tag criados com sucesso!"
