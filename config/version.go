@@ -3,9 +3,11 @@ package config
 import "fmt"
 
 var (
-	Version string
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 func LogVersion() {
-	fmt.Println("Version", Version)
+	fmt.Printf("Attom %s, commit %s, built at %s", version, commit, date)
 }
