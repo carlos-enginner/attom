@@ -7,7 +7,7 @@ if [ ! -d ".git/hooks" ]; then
 fi
 
 # Copia todos os hooks do diretório .githooks para .git/hooks
-cp .githooks/* .git/hooks/
+cp githooks/* .git/hooks/
 
 # Torna os hooks executáveis
 chmod +x .git/hooks/*
