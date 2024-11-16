@@ -23,13 +23,11 @@ builds:
     - env:
       - CGO_ENABLED=0
       # - GITHUB_TOKEN="{{ .Env.GITHUB_TOKEN }}"
-    - goos:
+    goos:
       - linux
       - windows
-    - goarch: 
+    goarch: 
       - amd64
-    - ldflags:
-      - -s -w -X main.build={{.Version}}
 
 changelog:
   sort: asc
