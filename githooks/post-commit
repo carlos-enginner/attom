@@ -40,8 +40,4 @@ echo "Versão atualizada para $new_version"
 
 # Cria a nova tag no Git
 git tag -a "$new_version" -m "Release versão $new_version"
-git push --tags
-
-# Executa o GoReleaser para gerar o release
-goreleaser release --rm-dist
-
+git push origin "$new_version"
