@@ -16,6 +16,7 @@ func init() {
 	// rootCmd.AddCommand(DatabaseNotificationListenCmd())
 	rootCmd.AddCommand(ApplicationInstall())
 	rootCmd.AddCommand(ApplicationStart())
+	rootCmd.AddCommand(ApplicationSelfUpdate())
 }
 
 // Execute executa o comando raiz
