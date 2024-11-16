@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	fmt.Printf("Version: %s Commit: %s", config.Version, config.Commit)
+	fmt.Printf("Version: %s Commit: %s \n", config.Version, config.Commit)
 	if err := cmd.Execute(); err != nil {
 		fmt.Println("Error executing command:", err)
 		os.Exit(1)
