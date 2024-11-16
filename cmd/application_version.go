@@ -9,7 +9,7 @@ func ApplicationGetVersion() *cobra.Command {
 		Use:   "version",
 		Short: "Show version application",
 		Run: func(cmd *cobra.Command, args []string) {
-			ApplicationGetVersion().Version
+
 		},
 	}
 }
