@@ -17,6 +17,7 @@ func init() {
 	rootCmd.AddCommand(ApplicationInstall())
 	rootCmd.AddCommand(ApplicationStart())
 	rootCmd.AddCommand(ApplicationSelfUpdate())
+	rootCmd.AddCommand(ApplicationGetVersion())
 }
 
 // Execute executa o comando raiz

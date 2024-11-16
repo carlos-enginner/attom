@@ -7,5 +7,5 @@ var (
 )
 
 func LogVersion() {
-	fmt.Println("version=", Version)
+	fmt.Println("Version", Version)
 }
