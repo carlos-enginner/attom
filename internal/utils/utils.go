@@ -2,9 +2,12 @@ package utils
 
 import (
 	"fmt"
+	"log"
+	"regexp"
 	"src/post_relay/config"
 	"src/post_relay/models/environment"
 
+	"github.com/Masterminds/semver"
 	"github.com/spf13/viper"
 )
 
@@ -51,4 +54,34 @@ func Substr(s string, start, end int) string {
 
 func ToString(value float64) string {
 	return fmt.Sprintf("%.0f", value)
+}
+
+func VersionIsGreaterThan(latestVersion string) bool {
+	currentVersion := config.Version
+	current, err := semver.NewVersion(currentVersion)
+	if err != nil {
+		log.Fatalf("Erro ao parse da versão atual: %v", err)
+	}
+
+	latest, err := semver.NewVersion(latestVersion)
+	if err != nil {
+		log.Fatalf("Erro ao parse da versão mais recente: %v", err)
+	}
+
+	// Compara as versões
+	return latest.GreaterThan(current)
+}
+
+func ExtractVersionFromURL(url string) (string, error) {
+	// Expressão regular para encontrar o padrão de versão (vX.Y.Z)
+	re := regexp.MustCompile(`v(\d+\.\d+\.\d+)`)
+
+	// Tenta encontrar a versão na URL
+	matches := re.FindStringSubmatch(url)
+
+	// Se encontrar a versão, retorna ela, caso contrário retorna erro
+	if len(matches) > 1 {
+		return matches[1], nil
+	}
+	return "", fmt.Errorf("versão não encontrada na URL")
 }

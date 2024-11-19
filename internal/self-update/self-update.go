@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"src/post_relay/internal/utils"
 	"strings"
 )
 
 // Função para substituir o binário atual pelo novo
-func ReplaceExecutable(newBin string) error {
+func replaceExecutable(newBin string) error {
 	// Obter o caminho do binário atual
 	currentPath, err := os.Executable()
 	if err != nil {
@@ -49,7 +50,7 @@ func ReplaceExecutable(newBin string) error {
 }
 
 // Função para baixar a última release de um repositório GitHub
-func DownloadLatestRelease(owner, repo, token, targetPath string) error {
+func downloadLatestRelease(owner, repo, token, targetPath string) error {
 	// Montar a URL da API do GitHub para obter a release
 	assetURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
 
@@ -94,9 +95,11 @@ func DownloadLatestRelease(owner, repo, token, targetPath string) error {
 	// Encontrar o binário correto na lista de assets
 	goos := runtime.GOOS
 	var releaseID uint64
+	var browserDownloadUrl string
 	for _, asset := range releaseData.Assets {
 		if strings.Contains(asset.Name, goos) {
 			releaseID = asset.Id
+			browserDownloadUrl = asset.BrowserDownloadURL
 			break
 		}
 	}
@@ -106,8 +109,18 @@ func DownloadLatestRelease(owner, repo, token, targetPath string) error {
 		return fmt.Errorf("binário adequado não encontrado nas assets da release")
 	}
 
+	latestVersion, err := utils.ExtractVersionFromURL(browserDownloadUrl)
+	if err != nil {
+		return fmt.Errorf("não foi possível detectar a última versão do aplicativo")
+	}
+
 	// Fazer o download do binário
+	if !utils.VersionIsGreaterThan(latestVersion) {
+		return fmt.Errorf("versão do aplicativo já está na última versão: %s", latestVersion)
+	}
+
 	return downloadFile(releaseID, targetPath, owner, repo, token)
+
 }
 
 // Função para baixar o binário de uma URL
@@ -149,4 +162,26 @@ func downloadFile(releaseID uint64, filePath, owner string, repo string, token s
 	}
 
 	return nil
+}
+
+func CheckAndUpdateVersion() {
+	owner := "carlos-enginner"
+	repo := "attom"
+	token := "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" // Substitua pelo seu token de acesso pessoal
+	targetPath := "./push-relay.new"                                                                         // Caminho onde o novo binário será salvo
+
+	// Baixar a última release
+	err := downloadLatestRelease(owner, repo, token, targetPath)
+	if err != nil {
+		log.Fatalf("Erro ao baixar a release: %v", err)
+	}
+	fmt.Println("Binário baixado com sucesso!")
+
+	// Substituir o binário atual pelo novo
+	err = replaceExecutable(targetPath)
+	if err != nil {
+		log.Fatalf("Erro ao substituir o binário: %v", err)
+	}
+
+	fmt.Println("Self-update concluído com sucesso!")
 }
