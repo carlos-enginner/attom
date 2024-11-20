@@ -103,7 +103,7 @@ func StartNotifications() {
 		if err := dispatch.SendMessage(payload); err != nil {
 			log.Errorln("Error sending to API:", err)
 		} else {
-			log.Info("Notification sent to API successfully!:", notification.Payload)
+			log.Info("Notification sent to API successfully!")
 		}
 	}
 }

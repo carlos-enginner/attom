@@ -7,11 +7,15 @@ import (
 	"io"
 	"net/http"
 	"src/post_relay/internal/associations"
+	"src/post_relay/internal/logger"
 	"src/post_relay/internal/utils"
 	"src/post_relay/models/panels"
 )
 
 func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error) {
+
+	logger.GetLogger().Info("Dispach.MakePayload.start")
+
 	patientName, ok := receivedJSON["cidadao"].(string)
 	if !ok {
 		patientName = "Unknown"
@@ -42,15 +46,22 @@ func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error)
 		return panels.APIPayload{}, err
 	}
 
-	return panels.APIPayload{
+	payload := panels.APIPayload{
 		Context:            receivedJSON,
 		NomePaciente:       patientName,
 		IdPainel:           painelQueue.PanelUuid,
 		IdLocalAtendimento: painelQueue.SectorUuid,
-	}, nil
+	}
+
+	logger.GetLogger().Infof("Dispatch.MakePayload.data - [nome_paciente: %s id_painel: %s id_local_atendimento: %s])", payload.NomePaciente, payload.IdPainel, payload.IdLocalAtendimento)
+
+	return payload, nil
 }
 
 func SendMessage(payload panels.APIPayload) error {
+
+	logger.GetLogger().Info("Dispatch.SendMessage.start")
+
 	apiConfig, err := utils.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("erro ao carregar configuração do webhook: %v", err)
@@ -82,5 +93,6 @@ func SendMessage(payload panels.APIPayload) error {
 		return fmt.Errorf("resposta não-200 recebida da API: %s, corpo: %s", resp.Status, string(body))
 	}
 
+	logger.GetLogger().Infof("Dispatch.SendMessage.data - [ibge: %s token: %s end_point: %s]", apiConfig.API.IBGE, apiConfig.API.Token, apiConfig.API.Endpoint)
 	return nil
 }
