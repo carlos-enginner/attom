@@ -91,8 +91,8 @@ func newConfig() *environment.Config {
 func ApplicationInitCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "init",
-		Short: "Initialize the application and generate a configuration file",
-		Long:  `This command asks for user input and generates a JSON configuration file with the provided settings.`,
+		Short: "Generates a .config/environment.toml file",
+		Long:  `This command asks for user input and generates a TOML configuration file with the provided settings.`,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			// Criando a configuração

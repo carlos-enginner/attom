@@ -9,7 +9,7 @@ import (
 func ApplicationSelfUpdate() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
-		Short: "Serviço de atualização da aplicação",
+		Short: "Application update service",
 		Run: func(cmd *cobra.Command, args []string) {
 			selfupdate.CheckAndUpdateVersion()
 		},

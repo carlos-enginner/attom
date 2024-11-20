@@ -8,8 +8,8 @@ import (
 
 func DatabaseNotificationListenCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "listen",
-		Short: "Listen for notifications from the database",
+		Use:   "start",
+		Short: "Application start",
 		Run: func(cmd *cobra.Command, args []string) {
 			go db.StartNotifications()
 			select {}
