@@ -40,6 +40,6 @@ changelog:
       - "^pgdata:"
 
 archives:
-  - format: none
+  - format: binary
 
 
