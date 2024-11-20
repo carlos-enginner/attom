@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"src/post_relay/config"
 	"src/post_relay/internal/dispatch"
+	"src/post_relay/internal/logger"
 	"src/post_relay/internal/utils"
 
 	"github.com/jackc/pgx/v4"
@@ -45,7 +46,10 @@ func ListenForNotifications(conn *pgx.Conn) error {
 		return err
 	}
 
+	log := logger.GetLogger()
+	log.Info("Listening for notifications...")
 	fmt.Println("Listening for notifications...")
+
 	return nil
 }
 
@@ -74,15 +78,14 @@ func StartNotifications() {
 		log.Fatal("Error listening for notifications:", err)
 	}
 
+	log := logger.GetLogger()
+
 	for {
 		// Esperar por notificações
 		notification, err := conn.WaitForNotification(context.Background())
 		if err != nil {
 			log.Fatal("Error waiting for notification:", err)
 		}
-
-		// Exibir notificação
-		fmt.Printf("Received notification: %s\n", notification.Payload)
 
 		// Parse JSON da notificação
 		var notificationJSON map[string]interface{}
@@ -93,14 +96,14 @@ func StartNotifications() {
 		// Enviar para API
 		payload, err := dispatch.MakePayload(notificationJSON)
 		if err != nil {
-			fmt.Println("Error:", err)
+			log.Errorln("Error:", err)
 			return
 		}
 
 		if err := dispatch.SendMessage(payload); err != nil {
-			log.Println("Error sending to API:", err)
+			log.Errorln("Error sending to API:", err)
 		} else {
-			fmt.Println("Notification sent to API successfully!")
+			log.Info("Notification sent to API successfully!:", notification.Payload)
 		}
 	}
 }

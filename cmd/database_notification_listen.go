@@ -12,7 +12,6 @@ func DatabaseNotificationListenCmd() *cobra.Command {
 		Short: "Listen for notifications from the database",
 		Run: func(cmd *cobra.Command, args []string) {
 			go db.StartNotifications()
-
 			select {}
 		},
 	}
