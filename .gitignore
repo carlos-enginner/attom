@@ -7,9 +7,6 @@ vendor/
 *.test
 *.out
 
-# Arquivos de dependências baixadas (caso você esteja usando o módulo Go)
-go.sum
-go.mod
 
 # Arquivos de configuração do editor/IDE
 .idea/
@@ -17,6 +14,7 @@ go.mod
 
 # Arquivos de log
 *.log
+logs/*.log
 
 # Arquivos de cache de build
 *.cache
