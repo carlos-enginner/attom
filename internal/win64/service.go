@@ -2,6 +2,7 @@ package win64
 
 import (
 	"fmt"
+	"src/post_relay/config"
 	"src/post_relay/internal/db"
 
 	"github.com/kardianos/service"
@@ -11,14 +12,14 @@ type Program struct{}
 
 // Start define o que o serviço vai fazer quando iniciado
 func (p *Program) Start(s service.Service) error {
-	// A lógica do seu serviço começa aqui
 	go p.run()
 	return nil
 }
 
 // run contém a lógica que o serviço vai executar enquanto estiver rodando
 func (p *Program) run() {
-	db.StartNotifications()
+	go db.StartNotifications()
+	select {}
 }
 
 // Stop define o que acontece quando o serviço é parado
@@ -31,9 +32,9 @@ func (p *Program) Stop(s service.Service) error {
 func NewService() (service.Service, error) {
 	prg := &Program{}
 	svcConfig := &service.Config{
-		Name:        "Attom",                              // Nome do serviço
-		DisplayName: "Attom",                              // Nome para exibição no Gerenciador de Serviços
-		Description: "Este é um serviço Go simples-teste", // Descrição do serviço
+		Name:        fmt.Sprintf("Attom v%s", config.Version), // Nome do serviço
+		DisplayName: fmt.Sprintf("Attom v%s", config.Version), // Nome para exibição no Gerenciador de Serviços
+		Description: "Este é um serviço Go simples-teste",     // Descrição do serviço
 	}
 
 	// Cria e retorna a instância do serviço
