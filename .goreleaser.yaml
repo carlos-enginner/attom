@@ -39,4 +39,7 @@ changelog:
       - "^test:"
       - "^pgdata:"
 
+archives:
+  - format: none
+
 
