@@ -1,5 +1,7 @@
 package environment
 
+import "time"
+
 // Queue define a estrutura para a configuração da fila (queue)
 type Queue struct {
 	PanelUuid  string `toml:"panelUuid"`
@@ -38,8 +40,7 @@ type Database struct {
 
 // Application define a configuração da aplicação
 type Application struct {
-	Ready      bool `toml:"ready"`
-	AutoUpdate bool `toml:"auto_update"`
+	TimeoutConnection time.Duration `toml:"timeout_connection_in_seconds"`
 }
 
 // Config é a estrutura principal que contém todas as outras configurações do ambiente

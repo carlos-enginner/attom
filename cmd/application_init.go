@@ -13,8 +13,7 @@ import (
 func newConfig() *environment.Config {
 	return &environment.Config{
 		Application: environment.Application{
-			Ready:      false,
-			AutoUpdate: false,
+			TimeoutConnection: 10,
 		},
 		API: environment.API{
 			Endpoint: "https://example.com/api",

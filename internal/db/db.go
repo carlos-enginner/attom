@@ -34,6 +34,7 @@ func Connect() (*pgx.Conn, error) {
 
 	conn, err := pgx.Connect(context.Background(), connStr)
 	if err != nil {
+		logger.GetLogger().Errorf("connection error: %v", err)
 		return nil, err
 	}
 
@@ -46,10 +47,8 @@ func ListenForNotifications(conn *pgx.Conn) error {
 		return err
 	}
 
-	log := logger.GetLogger()
-	log.Info("Listening for notifications...")
+	logger.GetLogger().Info("Listening for notifications...")
 	fmt.Println("Listening for notifications...")
-
 	return nil
 }
 
@@ -58,9 +57,11 @@ func EnableNotify(conn *pgx.Conn) error {
 
 	_, err := conn.Exec(context.Background(), sql)
 	if err != nil {
+		logger.GetLogger().Errorf("could not execute SQL query: %v", err)
 		return fmt.Errorf("could not execute SQL query: %v", err)
 	}
 
+	logger.GetLogger().Infof("Executed SQL file: %s\n", config.NOTIFY_STRUCTURED)
 	fmt.Printf("Executed SQL file: %s\n", config.NOTIFY_STRUCTURED)
 	return nil
 }

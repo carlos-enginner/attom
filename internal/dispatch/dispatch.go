@@ -6,10 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"src/post_relay/internal/associations"
 	"src/post_relay/internal/logger"
 	"src/post_relay/internal/utils"
 	"src/post_relay/models/panels"
+	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error) {
@@ -64,16 +68,19 @@ func SendMessage(payload panels.APIPayload) error {
 
 	apiConfig, err := utils.LoadConfig()
 	if err != nil {
+		logger.GetLogger().Errorf("erro ao carregar configuração do webhook: %v", err)
 		return fmt.Errorf("erro ao carregar configuração do webhook: %v", err)
 	}
 
 	data, err := json.Marshal(payload)
 	if err != nil {
+		logger.GetLogger().Errorf("erro ao serializar payload: %v", err)
 		return fmt.Errorf("erro ao serializar payload: %v", err)
 	}
 
 	req, err := http.NewRequest("POST", apiConfig.API.Endpoint, bytes.NewBuffer(data))
 	if err != nil {
+		logger.GetLogger().Errorf("erro ao criar requisição: %v", err)
 		return fmt.Errorf("erro ao criar requisição: %v", err)
 	}
 
@@ -81,15 +88,31 @@ func SendMessage(payload panels.APIPayload) error {
 	req.Header.Set("ibge", apiConfig.API.IBGE)
 	req.Header.Set("token", apiConfig.API.Token)
 
-	client := &http.Client{}
+	timeoutConnection := apiConfig.Application.TimeoutConnection
+
+	client := &http.Client{
+		Timeout: timeoutConnection * time.Second,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
+		if err, ok := err.(*url.Error); ok && err.Timeout() {
+			logger.GetLogger().WithFields(logrus.Fields{
+				"error": err,
+				"type":  "timeout",
+			}).Error("Timeout ao tentar conectar com a API")
+		} else {
+			logger.GetLogger().WithFields(logrus.Fields{
+				"error": err,
+				"type":  "connection",
+			}).Error("Erro ao enviar requisição para API")
+		}
 		return fmt.Errorf("erro ao enviar requisição para API: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		logger.GetLogger().Errorf("resposta não-200 recebida da API: %s, corpo: %s", resp.Status, string(body))
 		return fmt.Errorf("resposta não-200 recebida da API: %s, corpo: %s", resp.Status, string(body))
 	}
 
