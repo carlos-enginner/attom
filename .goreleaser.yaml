@@ -41,7 +41,5 @@ changelog:
 
 archives:
   - format: binary
-    exclude: 
-    - "*.go"
-    - "*.md"
+
 
