@@ -13,9 +13,9 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(ApplicationInitCmd())
 	rootCmd.AddCommand(DatabaseNotificationEnableCmd())
-	// rootCmd.AddCommand(DatabaseNotificationListenCmd())
-	rootCmd.AddCommand(ApplicationInstall())
-	rootCmd.AddCommand(ApplicationStart())
+	rootCmd.AddCommand(DatabaseNotificationListenCmd())
+	rootCmd.AddCommand(ServiceInstall())
+	rootCmd.AddCommand(ServiceStart())
 	rootCmd.AddCommand(ApplicationSelfUpdate())
 	rootCmd.AddCommand(ApplicationGetVersion())
 }

@@ -11,9 +11,9 @@ import (
 
 var logger service.Logger
 
-func ApplicationStart() *cobra.Command {
+func ServiceStart() *cobra.Command {
 	return &cobra.Command{
-		Use:   "start",
+		Use:   "start_service",
 		Short: "Inicia o serviço no Windows",
 		Run: func(cmd *cobra.Command, args []string) {
 			svc, err := win64.NewService()

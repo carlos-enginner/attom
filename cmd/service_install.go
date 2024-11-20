@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ApplicationInstall() *cobra.Command {
+func ServiceInstall() *cobra.Command {
 	return &cobra.Command{
-		Use:   "install",
+		Use:   "install_service",
 		Short: "Instala o serviço no Windows para execução automática",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Cria o serviço
