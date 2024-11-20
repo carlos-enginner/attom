@@ -45,7 +45,7 @@ func main() {
 
 	App := &App{}
 
-	App.start()
+	go App.start()
 
 	select {}
 }
