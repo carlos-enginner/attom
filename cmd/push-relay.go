@@ -6,8 +6,6 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use: "attom",
-	// Short: "Attom",
-	// Long:  fmt.Sprintf("This application listens for notifications from the database and forwards them to API.\n\nVersion: %s\nCommit:%s\n", config.Version, config.Commit),
 }
 
 func init() {
