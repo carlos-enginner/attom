@@ -80,7 +80,7 @@ func NssmInstallService() {
 	// Usar o nssm.exe para criar o serviço no Windows
 	// Exemplo de comando para criar um serviço (ajuste conforme necessário)
 	serviceName := "AttomSvc"
-	executablePath := execDir + "\\push-relay.exe"
+	executablePath := execDir + "\\attom.exe"
 
 	// Comando nssm.exe para criar o serviço
 	cmdCreateService := exec.Command(nssmPath, "install", serviceName, executablePath)

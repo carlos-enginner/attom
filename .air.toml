@@ -5,9 +5,9 @@ tmp_dir = "tmp"
 
 [build]
 exclude_unchanged = true
-bin = "./tmp/push-relay"
-cmd = "go build -o ./tmp/push-relay ./main.go"
-full_bin = "dlv exec ./tmp/push-relay --listen=:4000 --headless=true --api-version=2 --accept-multiclient --continue --log"
+bin = "./tmp/attom"
+cmd = "go build -o ./tmp/attom ./main.go"
+full_bin = "dlv exec ./tmp/attom --listen=:4000 --headless=true --api-version=2 --accept-multiclient --continue --log"
 include_ext = ["go"]
 exclude_dir = [".vscode", ".github", "bin", "tmp", "pgdata", "dist", "githooks"]
 exclude_regex = ["_test.go"]

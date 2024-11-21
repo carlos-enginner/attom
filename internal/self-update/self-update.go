@@ -167,8 +167,8 @@ func downloadFile(releaseID uint64, filePath, owner string, repo string, token s
 func CheckAndUpdateVersion() {
 	owner := "carlos-enginner"
 	repo := "attom"
-	token := "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" // Substitua pelo seu token de acesso pessoal
-	targetPath := "./push-relay.new"                                                                         // Caminho onde o novo binário será salvo
+	token := "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"
+	targetPath := "./attom.new"
 
 	// Baixar a última release
 	err := downloadLatestRelease(owner, repo, token, targetPath)

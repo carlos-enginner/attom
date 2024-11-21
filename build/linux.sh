@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -r ./tmp/push-relay
-go build -o ./tmp/push-relay ./main.go
+rm -r ./tmp/attom
+go build -o ./tmp/attom ./main.go
