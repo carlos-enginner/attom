@@ -54,3 +54,9 @@ upx:
 
     # Valid options are from '1' (faster) to '9' (better), and 'best'.
     compress: 9
+
+    # Whether to try LZMA (slower).
+    lzma: true
+
+    # Whether to try all methods and filters (slow).
+    brute: true
