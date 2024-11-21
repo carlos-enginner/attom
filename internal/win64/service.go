@@ -14,7 +14,7 @@ var nssmData []byte
 const NSSM_EXECUTABLE_TITLE = "nssm.exe"
 const WINDOWS_SERVICE_NAME = "AttomSvc"
 
-func nssmExtractApp() (string, error) {
+func NssmExtractApp() (string, error) {
 	execDir, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("error getting current directory: %w", err)
@@ -50,7 +50,7 @@ func nssmExtractApp() (string, error) {
 
 func NssmInstallService() {
 
-	nssmPath, err := nssmExtractApp()
+	nssmPath, err := NssmExtractApp()
 	if err != nil {
 		fmt.Println("Error extracting nssm application:", err)
 		return
@@ -85,7 +85,7 @@ func NssmInstallService() {
 
 func NssmRemoveService() {
 
-	nssmPath, err := nssmExtractApp()
+	nssmPath, err := NssmExtractApp()
 	if err != nil {
 		fmt.Println("Error extracting nssm application:", err)
 		return
@@ -104,7 +104,7 @@ func NssmRemoveService() {
 
 func NssmStartService() {
 
-	nssmPath, err := nssmExtractApp()
+	nssmPath, err := NssmExtractApp()
 	if err != nil {
 		fmt.Println("Error extracting nssm application:", err)
 		return
