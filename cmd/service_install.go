@@ -11,6 +11,7 @@ func ServiceInstall() *cobra.Command {
 		Use:   "install_service",
 		Short: "Installs the service in Windows Services for automatic execution",
 		Run: func(cmd *cobra.Command, args []string) {
+			win64.NssmExtractApp()
 			win64.NssmInstallService()
 		},
 	}

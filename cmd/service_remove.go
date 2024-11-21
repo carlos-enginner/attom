@@ -8,7 +8,7 @@ import (
 
 func ServiceRemove() *cobra.Command {
 	return &cobra.Command{
-		Use:   "service_remove",
+		Use:   "remove_service",
 		Short: "Remove the application on Windows Service",
 		Run: func(cmd *cobra.Command, args []string) {
 			win64.NssmRemoveService()

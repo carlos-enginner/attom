@@ -118,7 +118,7 @@ func NssmStartService() {
 
 	nssmPath := filepath.Join(execDir+"\\.nssm", NSSM_EXECUTABLE_TITLE)
 
-	startArgument := "start"
+	startArgument := "start_service"
 
 	cmdStartService := exec.Command(nssmPath, "start", WINDOWS_SERVICE_NAME, startArgument)
 
