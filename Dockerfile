@@ -15,7 +15,8 @@ COPY . .
 RUN go install github.com/air-verse/air@latest && \
     CGO_ENABLED=0 go install -ldflags "-s -w -extldflags '-static'" github.com/go-delve/delve/cmd/dlv@latest
 
-RUN echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt update && apt install -y goreleaser
+RUN echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt update && apt install -y goreleaser && apt install -y xz-utils
+RUN wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz && tar -xf upx-4.2.4-amd64_linux.tar.xz && mv upx-4.2.4-amd64_linux/upx /usr/local/bin/ && upx --version
 
 EXPOSE 8080
 EXPOSE 2345
