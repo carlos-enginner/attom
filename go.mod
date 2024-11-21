@@ -5,7 +5,6 @@ go 1.23.2
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/jackc/pgx/v4 v4.18.3
-	github.com/kardianos/service v1.2.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0

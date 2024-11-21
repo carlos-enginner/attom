@@ -23,13 +23,6 @@ func NssmExtractApp() {
 
 	nssmDir := filepath.Join(execDir, ".nssm")
 
-	nssmPath := filepath.Join(nssmDir, NSSM_EXECUTABLE_TITLE)
-
-	if _, err := os.Stat(nssmPath); err == nil {
-		fmt.Println("Arquivo 'nssm.exe' já existe em:", nssmPath)
-		return
-	}
-
 	err = os.MkdirAll(nssmDir, 0755)
 	if err != nil {
 		fmt.Println("Erro ao criar a pasta 'nssm':", err)
@@ -49,6 +42,7 @@ func NssmExtractApp() {
 		return
 	}
 
+	nssmPath := filepath.Join(nssmDir, NSSM_EXECUTABLE_TITLE)
 	err = os.WriteFile(nssmPath, nssmData, 0755)
 	if err != nil {
 		fmt.Println("Erro ao escrever o arquivo nssm.exe:", err)
