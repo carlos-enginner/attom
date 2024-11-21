@@ -11,7 +11,7 @@ var logger service.Logger
 
 func ServiceStart() *cobra.Command {
 	return &cobra.Command{
-		Use:   "start_service",
+		Use:   "service_start",
 		Short: "Starts the application on Windows Service",
 		Run: func(cmd *cobra.Command, args []string) {
 			win64.NssmStartService()

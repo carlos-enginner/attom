@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: app_post_relay
+    container_name: attom
     build:
       context: ./
       dockerfile: Dockerfile
