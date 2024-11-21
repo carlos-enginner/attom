@@ -51,6 +51,6 @@ upx:
 
     # Filter by GOARCH.
     goarch: [amd64]
-    
+
     # Valid options are from '1' (faster) to '9' (better), and 'best'.
-    compress: 5
+    compress: 9
