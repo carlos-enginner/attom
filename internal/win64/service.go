@@ -14,51 +14,53 @@ var nssmData []byte
 const NSSM_EXECUTABLE_TITLE = "nssm.exe"
 const WINDOWS_SERVICE_NAME = "AttomSvc"
 
-func NssmExtractApp() {
+func nssmExtractApp() (string, error) {
 	execDir, err := os.Getwd()
 	if err != nil {
-		fmt.Printf("Error getting current directory: %s", err)
-		return
+		return "", fmt.Errorf("error getting current directory: %w", err)
 	}
 
 	nssmDir := filepath.Join(execDir, ".nssm")
 
 	err = os.MkdirAll(nssmDir, 0755)
 	if err != nil {
-		fmt.Println("Erro ao criar a pasta 'nssm':", err)
-		return
+		return "", fmt.Errorf("erro ao criar a pasta 'nssm': %w", err)
 	}
 
 	cmd := exec.Command("attrib", "+h", nssmDir)
 	err = cmd.Run()
 	if err != nil {
-		fmt.Println("Erro ao tornar a pasta '.nssm' oculta:", err)
-		return
+		return "", fmt.Errorf("erro ao tornar a pasta '.nssm' oculta: %w", err)
+
 	}
 
 	err = os.MkdirAll(nssmDir, 0755)
 	if err != nil {
-		fmt.Println("Erro ao criar a pasta '.nssm':", err)
-		return
+		return "", fmt.Errorf("erro ao criar a pasta '.nssm': %w", err)
 	}
 
 	nssmPath := filepath.Join(nssmDir, NSSM_EXECUTABLE_TITLE)
 	err = os.WriteFile(nssmPath, nssmData, 0755)
 	if err != nil {
-		fmt.Println("Erro ao escrever o arquivo nssm.exe:", err)
-		return
+		return "", fmt.Errorf("erro ao escrever o arquivo nssm.exe: %w", err)
 	}
+
+	return nssmPath, nil
 }
 
 func NssmInstallService() {
+
+	nssmPath, err := nssmExtractApp()
+	if err != nil {
+		fmt.Println("Error extracting nssm application:", err)
+		return
+	}
 
 	execDir, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Error getting current directory:", err)
 		return
 	}
-
-	nssmPath := filepath.Join(execDir+"\\.nssm", NSSM_EXECUTABLE_TITLE)
 
 	executablePath := execDir + "\\attom.exe"
 
@@ -83,13 +85,11 @@ func NssmInstallService() {
 
 func NssmRemoveService() {
 
-	execDir, err := os.Getwd()
+	nssmPath, err := nssmExtractApp()
 	if err != nil {
-		fmt.Println("Error getting current directory:", err)
+		fmt.Println("Error extracting nssm application:", err)
 		return
 	}
-
-	nssmPath := filepath.Join(execDir+"\\.nssm", NSSM_EXECUTABLE_TITLE)
 
 	cmdRemoveService := exec.Command(nssmPath, "remove", WINDOWS_SERVICE_NAME, "confirm")
 
@@ -104,13 +104,11 @@ func NssmRemoveService() {
 
 func NssmStartService() {
 
-	execDir, err := os.Getwd()
+	nssmPath, err := nssmExtractApp()
 	if err != nil {
-		fmt.Println("Error getting current directory:", err)
+		fmt.Println("Error extracting nssm application:", err)
 		return
 	}
-
-	nssmPath := filepath.Join(execDir+"\\.nssm", NSSM_EXECUTABLE_TITLE)
 
 	startArgument := "start_service"
 
