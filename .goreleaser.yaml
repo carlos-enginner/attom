@@ -42,4 +42,18 @@ changelog:
 archives:
   - format: binary
 
+upx:
+  -  # Templates: allowed.
+    enabled: true
 
+    # Filter by GOOS.
+    goos: [linux, windows]
+
+    # Filter by GOARCH.
+    goarch: [amd64]
+
+    # Filter by GOARM.
+    goarm: [8]
+
+    # Valid options are from '1' (faster) to '9' (better), and 'best'.
+    compress: best
