@@ -56,4 +56,4 @@ upx:
     goarm: [8]
 
     # Valid options are from '1' (faster) to '9' (better), and 'best'.
-    compress: best
+    compress: 2
