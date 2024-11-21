@@ -11,8 +11,8 @@ import (
 
 func DatabaseNotificationEnableCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "enable",
-		Short: "Database notifications enable",
+		Use:   "prepare_database",
+		Short: "Prepares the database for asynchronous notifications.",
 		Run: func(cmd *cobra.Command, args []string) {
 			conn, err := db.Connect()
 			// Conectar ao banco de dados

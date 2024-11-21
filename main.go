@@ -14,7 +14,7 @@ func printAsciiHeader() {
 	art := figure.NewFigure("ATTOM", "", true)
 	art.Print()
 
-	fmt.Printf("This application listens for notifications from the database and forwards them to API.\n\n")
+	fmt.Printf("This application listens for notifications from the database and forwards them to API.\n")
 }
 
 func main() {
