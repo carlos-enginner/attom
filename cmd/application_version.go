@@ -12,7 +12,7 @@ func ApplicationGetVersion() *cobra.Command {
 		Use:   "version",
 		Short: "Show version application",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("\n\nVersion: %s\nCommit: %s\n\n", config.Version, config.Commit)
+			fmt.Printf("\nVersion: %s\nCommit: %s\n\n", config.Version, config.Commit)
 		},
 	}
 }
