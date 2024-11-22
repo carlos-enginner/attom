@@ -83,9 +83,21 @@ func NssmInstallService() {
 		%s set AttomSvc Start SERVICE_AUTO_START
 	`, nssmPath, executablePath, nssmPath, executablePath, nssmPath, execDir, nssmPath, nssmPath, nssmPath)
 
-	logger.Infof(batScript)
+	filePath := filepath.Join(execDir, ".nssm", "nssm.bat")
 
-	cmdRunBat := exec.Command("cmd.exe", "/C", batScript)
+	absFilePath, err := filepath.Abs(filePath)
+	if err != nil {
+		fmt.Println("Erro ao obter o caminho absoluto:", err)
+		return
+	}
+
+	err = os.WriteFile(absFilePath, []byte(batScript), 0755)
+	if err != nil {
+		fmt.Println("Erro ao criar o arquivo:", err)
+		return
+	}
+
+	cmdRunBat := exec.Command("cmd.exe", "/C", absFilePath)
 	err = cmdRunBat.Run()
 	if err != nil {
 		logger.Errorf("Error running .bat script: %s", err)
