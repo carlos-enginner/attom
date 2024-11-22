@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"src/post_relay/internal/logger"
 )
 
 //go:embed assets/nssm.exe
@@ -15,33 +16,38 @@ const NSSM_EXECUTABLE_TITLE = "nssm.exe"
 const WINDOWS_SERVICE_NAME = "AttomSvc"
 
 func NssmExtractApp() (string, error) {
+
+	logger := logger.GetLogger()
+
 	execDir, err := os.Getwd()
 	if err != nil {
-		return "", fmt.Errorf("error getting current directory: %w", err)
+		logger.Errorf("erro ao obter o diretório atual: %s", err)
+		return "", fmt.Errorf("erro ao obter o diretório atual: %w", err)
 	}
 
 	nssmDir := filepath.Join(execDir, ".nssm")
 
-	err = os.MkdirAll(nssmDir, 0755)
-	if err != nil {
-		return "", fmt.Errorf("erro ao criar a pasta 'nssm': %w", err)
+	// Verifica se a pasta já existe antes de tentar criá-la
+	if _, err := os.Stat(nssmDir); os.IsNotExist(err) {
+		err = os.MkdirAll(nssmDir, 0755)
+		if err != nil {
+			logger.Errorf("erro ao criar a pasta '.nssm': %s", err)
+			return "", fmt.Errorf("erro ao criar a pasta '.nssm': %w", err)
+		}
 	}
 
 	cmd := exec.Command("attrib", "+h", nssmDir)
 	err = cmd.Run()
 	if err != nil {
+		logger.Errorf("erro ao tornar a pasta '.nssm' oculta: %s", err)
 		return "", fmt.Errorf("erro ao tornar a pasta '.nssm' oculta: %w", err)
-
 	}
 
-	err = os.MkdirAll(nssmDir, 0755)
-	if err != nil {
-		return "", fmt.Errorf("erro ao criar a pasta '.nssm': %w", err)
-	}
-
+	// Agora cria o arquivo nssm.exe
 	nssmPath := filepath.Join(nssmDir, NSSM_EXECUTABLE_TITLE)
 	err = os.WriteFile(nssmPath, nssmData, 0755)
 	if err != nil {
+		logger.Errorf("erro ao escrever o arquivo nssm.exe: %s", err)
 		return "", fmt.Errorf("erro ao escrever o arquivo nssm.exe: %w", err)
 	}
 
@@ -50,14 +56,18 @@ func NssmExtractApp() (string, error) {
 
 func NssmInstallService() {
 
+	logger := logger.GetLogger()
+
 	nssmPath, err := NssmExtractApp()
 	if err != nil {
+		logger.Errorf("Error extracting nssm application: %s", err)
 		fmt.Println("Error extracting nssm application:", err)
 		return
 	}
 
 	execDir, err := os.Getwd()
 	if err != nil {
+		logger.Errorf("Error getting current directory: %s", err)
 		fmt.Println("Error getting current directory:", err)
 		return
 	}
@@ -68,6 +78,7 @@ func NssmInstallService() {
 
 	err = cmdCreateService.Run()
 	if err != nil {
+		logger.Errorf("Error creating service: %s", err)
 		fmt.Println("Error creating service:", err)
 		return
 	}
@@ -76,6 +87,7 @@ func NssmInstallService() {
 
 	err = cmdSetDescription.Run()
 	if err != nil {
+		logger.Errorf("Error setting service description: %s", err)
 		fmt.Println("Error setting service description:", err)
 		return
 	}
@@ -85,8 +97,10 @@ func NssmInstallService() {
 
 func NssmRemoveService() {
 
+	logger := logger.GetLogger()
 	nssmPath, err := NssmExtractApp()
 	if err != nil {
+		logger.Errorf("Error setting service description: %s", err)
 		fmt.Println("Error extracting nssm application:", err)
 		return
 	}
@@ -95,6 +109,7 @@ func NssmRemoveService() {
 
 	err = cmdRemoveService.Run()
 	if err != nil {
+		logger.Errorf("Error removing service: %s", err)
 		fmt.Println("Error removing service:", err)
 		return
 	}
@@ -104,18 +119,20 @@ func NssmRemoveService() {
 
 func NssmStartService() {
 
+	logger := logger.GetLogger()
 	nssmPath, err := NssmExtractApp()
 	if err != nil {
+		logger.Errorf("Error extracting nssm application: %s", err)
 		fmt.Println("Error extracting nssm application:", err)
 		return
 	}
 
 	startArgument := "start_service"
-
 	cmdStartService := exec.Command(nssmPath, "start", WINDOWS_SERVICE_NAME, startArgument)
 
 	err = cmdStartService.Run()
 	if err != nil {
+		logger.Errorf("Error starting service: %s", err)
 		fmt.Println("Error starting service:", err)
 		return
 	}
