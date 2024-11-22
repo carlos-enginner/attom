@@ -7,6 +7,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"src/post_relay/internal/logger"
+
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 //go:embed assets/nssm.exe
@@ -74,14 +77,15 @@ func NssmInstallService() {
 
 	executablePath := filepath.Join(execDir, "Attom.exe")
 	batScript := fmt.Sprintf(`
-		@echo off
-		%s install AttomSvc "%s"
-		%s set AttomSvc Application "%s"
-		%s set AttomSvc AppDirectory "%s"
-		%s set AttomSvc AppParameters "start"
-		%s set AttomSvc Description "O serviço responsável por detectar e capturar eventos de atendimento no e-sus/PEC e envia-lós a um serviço externo de painel eletrônico"
-		%s set AttomSvc Start SERVICE_AUTO_START
-	`, nssmPath, executablePath, nssmPath, executablePath, nssmPath, execDir, nssmPath, nssmPath, nssmPath)
+@echo off
+chcp 65001
+%s install AttomSvc "%s"
+%s set AttomSvc Application "%s"
+%s set AttomSvc AppDirectory "%s"
+%s set AttomSvc AppParameters "start"
+%s set AttomSvc Description "O serviço responsável por detectar e capturar eventos de atendimento no e-sus/PEC e envia-lós a um serviço externo de painel eletrônico"
+%s set AttomSvc Start SERVICE_AUTO_START
+`, nssmPath, executablePath, nssmPath, executablePath, nssmPath, execDir, nssmPath, nssmPath, nssmPath)
 
 	filePath := filepath.Join(execDir, ".nssm", "nssm.bat")
 
@@ -91,7 +95,17 @@ func NssmInstallService() {
 		return
 	}
 
-	err = os.WriteFile(absFilePath, []byte(batScript), 0755)
+	// Usando transform para escrever em UTF-8
+	utf8Writer, err := os.Create(absFilePath)
+	if err != nil {
+		fmt.Println("Erro ao criar o arquivo:", err)
+		return
+	}
+	defer utf8Writer.Close()
+
+	encoder := unicode.UTF8.NewEncoder()
+	writer := transform.NewWriter(utf8Writer, encoder)
+	_, err = writer.Write([]byte(batScript))
 	if err != nil {
 		fmt.Println("Erro ao criar o arquivo:", err)
 		return
