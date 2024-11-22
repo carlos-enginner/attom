@@ -82,7 +82,7 @@ func NssmInstallService() {
 %s set AttomSvc Application "%s"
 %s set AttomSvc AppDirectory "%s"
 %s set AttomSvc AppParameters "start"
-%s set AttomSvc Description "O serviço responsável por detectar e capturar eventos de atendimento no e-sus/PEC e envia-lós a um serviço externo de painel eletrônico"
+%s set AttomSvc Description "The service responsible for detecting and capturing service events in e-sus/PEC and sending them to an external electronic panel service"
 %s set AttomSvc Start SERVICE_AUTO_START
 `, nssmPath, executablePath, nssmPath, executablePath, nssmPath, execDir, nssmPath, nssmPath, nssmPath)
 
@@ -94,7 +94,6 @@ func NssmInstallService() {
 		return
 	}
 
-	// Usando transform para escrever em UTF-8
 	file, err := os.Create(absFilePath)
 	if err != nil {
 		fmt.Println("Erro ao criar o arquivo:", err)
