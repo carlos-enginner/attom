@@ -127,7 +127,7 @@ func NssmStartService() {
 		return
 	}
 
-	startArgument := "start_service"
+	startArgument := "start"
 	cmdStartService := exec.Command(nssmPath, "start", WINDOWS_SERVICE_NAME, startArgument)
 
 	err = cmdStartService.Run()
