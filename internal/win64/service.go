@@ -67,28 +67,29 @@ func NssmInstallService() {
 
 	execDir, err := os.Getwd()
 	if err != nil {
-		logger.Errorf("Error getting current directory: %s", err)
-		fmt.Println("Error getting current directory:", err)
+		logger.Errorf("erro ao obter o diretório atual: %s", err)
+		fmt.Println("Erro ao obter o diretório atual:", err)
 		return
 	}
 
-	executablePath := execDir + "\\attom.exe"
+	executablePath := filepath.Join(execDir, "Attom.exe")
+	batScript := fmt.Sprintf(`
+		@echo off
+		%s install AttomSvc "%s"
+		%s set AttomSvc Application "%s"
+		%s set AttomSvc AppDirectory "%s"
+		%s set AttomSvc AppParameters "start"
+		%s set AttomSvc Description "O serviço responsável por detectar e capturar eventos de atendimento no e-sus/PEC e envia-lós a um serviço externo de painel eletrônico"
+		%s set AttomSvc Start SERVICE_AUTO_START
+	`, nssmPath, executablePath, nssmPath, executablePath, nssmPath, execDir, nssmPath, nssmPath, nssmPath)
 
-	cmdCreateService := exec.Command(nssmPath, "install", WINDOWS_SERVICE_NAME, executablePath)
+	logger.Infof(batScript)
 
-	err = cmdCreateService.Run()
+	cmdRunBat := exec.Command("cmd.exe", "/C", batScript)
+	err = cmdRunBat.Run()
 	if err != nil {
-		logger.Errorf("Error creating service: %s", err)
-		fmt.Println("Error creating service:", err)
-		return
-	}
-
-	cmdSetDescription := exec.Command(nssmPath, "set", WINDOWS_SERVICE_NAME, "Description", "O serviço responsável por detectar e capturar eventos de atendimento no e-sus/PEC e envia-lós a um serviço externo de painel eletrônico")
-
-	err = cmdSetDescription.Run()
-	if err != nil {
-		logger.Errorf("Error setting service description: %s", err)
-		fmt.Println("Error setting service description:", err)
+		logger.Errorf("Error running .bat script: %s", err)
+		fmt.Println("Error running .bat script:", err)
 		return
 	}
 
