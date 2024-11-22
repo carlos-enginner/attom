@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"src/post_relay/internal/logger"
 
-	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 )
 
@@ -78,7 +78,6 @@ func NssmInstallService() {
 	executablePath := filepath.Join(execDir, "Attom.exe")
 	batScript := fmt.Sprintf(`
 @echo off
-chcp 65001
 %s install AttomSvc "%s"
 %s set AttomSvc Application "%s"
 %s set AttomSvc AppDirectory "%s"
@@ -96,15 +95,14 @@ chcp 65001
 	}
 
 	// Usando transform para escrever em UTF-8
-	utf8Writer, err := os.Create(absFilePath)
+	file, err := os.Create(absFilePath)
 	if err != nil {
 		fmt.Println("Erro ao criar o arquivo:", err)
 		return
 	}
-	defer utf8Writer.Close()
+	defer file.Close()
 
-	encoder := unicode.UTF8.NewEncoder()
-	writer := transform.NewWriter(utf8Writer, encoder)
+	writer := transform.NewWriter(file, charmap.ISO8859_1.NewEncoder())
 	_, err = writer.Write([]byte(batScript))
 	if err != nil {
 		fmt.Println("Erro ao criar o arquivo:", err)
