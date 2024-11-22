@@ -11,9 +11,10 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(ApplicationInitCmd())
 	rootCmd.AddCommand(ServiceRemove())
-	rootCmd.AddCommand(ServiceStart())
+	// rootCmd.AddCommand(ServiceStart())
 	rootCmd.AddCommand(ServiceInstall())
 	rootCmd.AddCommand(DatabaseNotificationEnableCmd())
+	rootCmd.AddCommand(DatabaseNotificationListenCmd())
 	rootCmd.AddCommand(ApplicationSelfUpdate())
 	rootCmd.AddCommand(ApplicationGetVersion())
 }
