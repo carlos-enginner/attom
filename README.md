@@ -8,9 +8,9 @@ Um projeto de integração do Esus/PEC com uma API de Painel de Eletrônico.
 
 O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona no modo "service" e no Linux em modo standalone/no-service.
 
-- Para instalar é necessário baixar o executável em https://github.com/carlos-enginner/attom/releases/ e adicionar o arquivo em criar a pasta no sistema raiz: C:\Attom;
+- Para instalar é necessário baixar o executável em https://github.com/carlos-enginner/attom/releases/ e adicionar o arquivo em pasta no raiz do sistema: "C:\Attom"
 
-- Ao instalar o Attom no diretório C:\Attom é necessário configurar o programa para execução como administrador;
+- Ao instalar o Attom no diretório C:\Attom é necessário configurar a aplicação para execução em modo administrador;
 
 - Após a configuração de admin da aplicação abra o Prompt de comando, navegue até a pasta do C:\Attom em modo administrador, execute o seguinte comando:
 
