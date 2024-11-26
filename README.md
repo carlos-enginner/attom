@@ -90,7 +90,7 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
     panelUuid =  "eb6e9c6b-a196-42ed-8847-752da50bf95c"
     sectorUuid = "631da7f0-fe75-44fc-85c0-bafb56ab12d1"
 ```
-> O arquivo no dá a orientação de como configurar a comunicação com o bano de dados do Postgres e também a opção de configurar os dados do município em questão que usuará a aplicação, como também para qual painel de chamadas serão direcionadas as movimentações de atendimentos no PEC, como demostrado em panelUuid e sectorUuid. Bastando ajustar as conexões e orientar para qual fila será enviada as movimentações a aplicação estará quase pronto para uso.
+> O arquivo nos dá a orientação de como configurar a comunicação com o bano de dados do Postgres e também a opção de configurar os dados do município em questão que usuará a aplicação, como também para qual painel de chamadas serão direcionadas as movimentações de atendimentos no PEC, como demostrado em panelUuid e sectorUuid. Bastando ajustar as conexões e orientação de qual fila receberá as movimentações a aplicação estará quase pronta para uso.
 
 - Após a geração e devida configuração do .toml, execute o seguinte comando:
 
@@ -106,7 +106,7 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
 
 - Após a **instalação no serviço do windows**, execute ```services.msc``` para abrir o serviço do windows, encontre o serviço: AttomSvc e clique em executar.
 
-- Após a ativação do serviço a aplicação estará operacional em modo service, e para facilitar a monitoria/troubleshooting da mesma, é criado um arquivo de log com o nome de application.log na pasta chamada "logs" em C:\Attom\Logs
+- Após a ativação do serviço a aplicação estará operacional em modo service, e para facilitar a monitoria/troubleshooting da mesma será criado um arquivo de log com o nome de application.log na pasta chamada "logs" em C:\Attom\Logs. Ao final a aplicação já esta pronta para uso.
 
 ## Comandos disponívels no Attom:
 
