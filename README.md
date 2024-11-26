@@ -12,7 +12,7 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
 
 - Ao instalar o Attom no diretório C:\Attom é necessário configurar a aplicação para execução em modo administrador;
 
-- Após a configuração de admin da aplicação abra o Prompt de comando, navegue até a pasta do C:\Attom em modo administrador, execute o seguinte comando:
+- Após a configuração de admin da aplicação abra o Prompt de comando, navegue até a pasta do C:\Attom em modo administrador e execute o seguinte comando:
 
 ```attom.exe init```
 
