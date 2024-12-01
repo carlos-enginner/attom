@@ -30,55 +30,43 @@ func newConfig() *environment.Config {
 		Panels: environment.Panels{
 			Items: []environment.PanelItem{
 				{
-					Cnes:        "2382857",
 					Description: "Painel Procedimentos",
 					Cbos:        []string{},
-					Services:    []string{"9", "2", "8"},
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
 				},
 				{
-					Cnes:        "2382857",
 					Description: "Painel Exames",
 					Cbos:        []string{"2251", "2252"},
-					Services:    []string{"5"},
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
 				},
 				{
-					Cnes:        "2382857",
 					Description: "Painel Vacinas",
 					Cbos:        []string{"2251", "2252"},
-					Services:    []string{"3"},
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
 				},
 				{
-					Cnes:        "2382857",
 					Description: "Painel Triagem",
 					Cbos:        []string{"3222"},
-					Services:    []string{"7"},
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
 				},
 				{
-					Cnes:        "2382857",
 					Description: "Painel Consultório Médico",
 					Cbos:        []string{"2251", "2252", "2235", "2239", "2237"},
-					Services:    []string{"1", "6"},
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
 				},
 				{
-					Cnes:        "2382857",
 					Description: "Painel Consultório Odontológico",
 					Cbos:        []string{"2232", "322425", "322415"},
-					Services:    []string{"10", "11", "12", "15", "16", "18", "19"},
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
