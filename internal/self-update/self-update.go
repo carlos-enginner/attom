@@ -167,7 +167,7 @@ func downloadFile(releaseID uint64, filePath, owner string, repo string, token s
 func CheckAndUpdateVersion() {
 	owner := "carlos-enginner"
 	repo := "attom"
-	token := "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"
+	token := "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"
 	targetPath := "./attom.new"
 
 	// Baixar a última release
