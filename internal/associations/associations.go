@@ -6,17 +6,17 @@ import (
 	"src/post_relay/models/environment"
 )
 
-func LoadPainel(painel environment.Panels, cnes string, idServico string, idCbo string) (*environment.Queue, error) {
+func LoadPainel(painel environment.Panels, cnes string, idCbo string) (*environment.Queue, error) {
 
 	for _, painel := range painel.Items {
 
-		if painel.Cnes != cnes {
-			continue
-		}
+		// if painel.Cnes != cnes {
+		// 	continue
+		// }
 
-		if !utils.Contains(idServico, painel.Services) {
-			continue
-		}
+		// if !utils.Contains(idServico, painel.Services) {
+		// 	continue
+		// }
 
 		if len(painel.Cbos) > 0 {
 
@@ -31,5 +31,5 @@ func LoadPainel(painel environment.Panels, cnes string, idServico string, idCbo 
 		return &painel.Queue, nil
 	}
 
-	return nil, fmt.Errorf("nenhum painel foi encontrado para o serviço e CBO fornecidos no cnes %s", cnes)
+	return nil, fmt.Errorf("nenhum painel foi encontrado configurado para o CBO %s na unidade %s", idCbo, cnes)
 }
