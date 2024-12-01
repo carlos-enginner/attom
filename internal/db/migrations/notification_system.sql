@@ -14,34 +14,12 @@ drop function if exists push_relay_notify_status_change();
 -- view
 CREATE VIEW push_relay_events_context AS
 SELECT
-	t1.co_seq_atend,
-	tts.co_seq_tipo_servico co_tipo_servico,
-	tts.no_tipo_servico no_servico,
-    t1.co_seq_atend AS senha,
-    t2.no_status_atend AS status,
-    t2.co_status_atend AS estagio,
-    UPPER(t4.no_cidadao) AS cidadao,
-    t4.dt_nascimento,
-    t4.nu_cpf AS cpf,
-    t4.nu_cns AS cns,
-    CASE
-        WHEN t4.no_sexo = 'FEMININO' THEN 'F'
-        WHEN t4.no_sexo = 'MASCULINO' THEN 'M'
-    END AS sexo,
-    t1.dt_criacao_registro AS tempo,
-    UPPER(t6.no_profissional) AS profissional,
-    t6.nu_cns AS prof_cns,
-    t6.nu_cpf AS prof_cpf,
-    t8.co_cbo_2002 AS prof_cbo_nu,
-    t8.no_cbo AS prof_cbo,
-    t10.nu_ine AS prof_ine,
-    t10.no_equipe AS prof_equipe,
-    t9.nu_cnes AS cnes,
-    t9.no_unidade_saude AS unidade,
-    t1.dt_ultima_alteracao_status AS tempo_atendido,
-    t1.dt_ultima_alteracao_status AS tempo_cancelado,
-    t11.no_classificacao_risco,
-    t11.co_classificacao_risco
+    t1.co_seq_atend,
+	t6.nu_cns as prof_cns,
+	t8.co_cbo_2002 AS prof_cbo,
+	t9.nu_cnes as cnes,
+	trim(replace (t2.no_status_atend,'EM','')) as local_chamada,
+	UPPER(t4.no_cidadao) as cidadao
 FROM
     tb_atend t1
 LEFT JOIN tb_status_atend t2 ON t2.co_status_atend = t1.st_atend
@@ -51,11 +29,7 @@ LEFT JOIN tb_ator_papel t5 ON t1.co_responsavel = t5.co_seq_ator_papel
 LEFT JOIN tb_prof t6 ON t6.co_seq_prof = t5.co_prof
 LEFT JOIN tb_lotacao t7 ON t7.co_prof = t6.co_seq_prof
 LEFT JOIN tb_cbo t8 ON t8.co_cbo = t7.co_cbo
-LEFT JOIN tb_unidade_saude t9 ON t1.co_unidade_saude = t9.co_seq_unidade_saude
-LEFT JOIN tb_equipe t10 ON t1.co_equipe = t10.co_seq_equipe
-LEFT JOIN tb_classificacao_risco t11 ON t1.co_classificacao_risco = t11.co_classificacao_risco
-LEFT join rl_atend_tipo_servico rats ON	t1.co_seq_atend = rats.co_atend
-join tb_tipo_servico tts ON rats.tp_servico = tts.co_seq_tipo_servico;
+LEFT JOIN tb_unidade_saude t9 ON t1.co_unidade_saude = t9.co_seq_unidade_saude;
 
 
 -- table
