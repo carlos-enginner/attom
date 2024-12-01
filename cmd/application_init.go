@@ -30,6 +30,7 @@ func newConfig() *environment.Config {
 		Panels: environment.Panels{
 			Items: []environment.PanelItem{
 				{
+					Cnes:        "2382857",
 					Description: "Painel Procedimentos",
 					Cbos:        []string{},
 					Queue: environment.Queue{
@@ -37,6 +38,7 @@ func newConfig() *environment.Config {
 					},
 				},
 				{
+					Cnes:        "2382857",
 					Description: "Painel Exames",
 					Cbos:        []string{"2251", "2252"},
 					Queue: environment.Queue{
@@ -44,6 +46,7 @@ func newConfig() *environment.Config {
 					},
 				},
 				{
+					Cnes:        "2382857",
 					Description: "Painel Vacinas",
 					Cbos:        []string{"2251", "2252"},
 					Queue: environment.Queue{
@@ -51,6 +54,7 @@ func newConfig() *environment.Config {
 					},
 				},
 				{
+					Cnes:        "2382857",
 					Description: "Painel Triagem",
 					Cbos:        []string{"3222"},
 					Queue: environment.Queue{
@@ -58,6 +62,7 @@ func newConfig() *environment.Config {
 					},
 				},
 				{
+					Cnes:        "2382857",
 					Description: "Painel Consultório Médico",
 					Cbos:        []string{"2251", "2252", "2235", "2239", "2237"},
 					Queue: environment.Queue{
@@ -65,6 +70,7 @@ func newConfig() *environment.Config {
 					},
 				},
 				{
+					Cnes:        "2382857",
 					Description: "Painel Consultório Odontológico",
 					Cbos:        []string{"2232", "322425", "322415"},
 					Queue: environment.Queue{

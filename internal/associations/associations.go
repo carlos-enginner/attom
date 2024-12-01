@@ -10,13 +10,9 @@ func LoadPainel(painel environment.Panels, cnes string, idCbo string) (*environm
 
 	for _, painel := range painel.Items {
 
-		// if painel.Cnes != cnes {
-		// 	continue
-		// }
-
-		// if !utils.Contains(idServico, painel.Services) {
-		// 	continue
-		// }
+		if painel.Cnes != cnes {
+			continue
+		}
 
 		if len(painel.Cbos) > 0 {
 
