@@ -20,9 +20,9 @@ func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error)
 
 	logger.GetLogger().Info("Dispach.MakePayload.start")
 
-	patientName, ok := receivedJSON["cidadao"].(string)
+	cidadao, ok := receivedJSON["cidadao"].(string)
 	if !ok {
-		patientName = "Unknown"
+		cidadao = "Unknown"
 	}
 
 	idCbo, ok := receivedJSON["prof_cbo_nu"].(string)
@@ -35,24 +35,19 @@ func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error)
 		cnes = ""
 	}
 
-	idServico := utils.ToString(receivedJSON["co_tipo_servico"].(float64))
-	if !ok {
-		idServico = ""
-	}
-
 	environment, err := utils.LoadConfig()
 	if err != nil {
 		return panels.APIPayload{}, err
 	}
 
-	painelQueue, err := associations.LoadPainel(environment.Panels, cnes, idServico, idCbo)
+	painelQueue, err := associations.LoadPainel(environment.Panels, cnes, idCbo)
 	if err != nil {
 		return panels.APIPayload{}, err
 	}
 
 	payload := panels.APIPayload{
 		Context:            receivedJSON,
-		NomePaciente:       patientName,
+		NomePaciente:       cidadao,
 		IdPainel:           painelQueue.PanelUuid,
 		IdLocalAtendimento: painelQueue.SectorUuid,
 	}
