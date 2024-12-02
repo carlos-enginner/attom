@@ -81,7 +81,7 @@ func SendMessage(payload panels.APIPayload) error {
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("ibge", apiConfig.API.IBGE)
-	req.Header.Set("token", apiConfig.API.Token)
+	req.Header.Set("Authorization", apiConfig.API.Token)
 
 	timeoutConnection := apiConfig.Application.TimeoutConnection
 
