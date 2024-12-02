@@ -25,7 +25,7 @@ func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error)
 		cidadao = "Unknown"
 	}
 
-	idCbo, ok := receivedJSON["prof_cbo_nu"].(string)
+	idCbo, ok := receivedJSON["prof_cbo"].(string)
 	if !ok {
 		idCbo = ""
 	}
