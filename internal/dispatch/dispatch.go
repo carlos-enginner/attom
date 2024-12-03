@@ -79,15 +79,20 @@ func SendMessage(payload panels.APIPayload) error {
 		return fmt.Errorf("erro ao criar requisição: %v", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("ibge", apiConfig.API.IBGE)
-	req.Header.Set("Authorization", apiConfig.API.Token)
+	req.Header = http.Header{
+		"Content-Type":  {"application/json"},
+		"Authorization": {apiConfig.API.Token},
+		"ibge":          {apiConfig.API.IBGE},
+	}
 
 	timeoutConnection := apiConfig.Application.TimeoutConnection
 
 	client := &http.Client{
 		Timeout: timeoutConnection * time.Second,
 	}
+
+	logger.GetLogger().Infof("Dispatch.SendMessage.data - [ibge: %s token: %s end_point: %s]", apiConfig.API.IBGE, apiConfig.API.Token, apiConfig.API.Endpoint)
+
 	resp, err := client.Do(req)
 	if err != nil {
 		if err, ok := err.(*url.Error); ok && err.Timeout() {
@@ -111,6 +116,5 @@ func SendMessage(payload panels.APIPayload) error {
 		return fmt.Errorf("resposta não-200 recebida da API: %s, corpo: %s", resp.Status, string(body))
 	}
 
-	logger.GetLogger().Infof("Dispatch.SendMessage.data - [ibge: %s token: %s end_point: %s]", apiConfig.API.IBGE, apiConfig.API.Token, apiConfig.API.Endpoint)
 	return nil
 }
