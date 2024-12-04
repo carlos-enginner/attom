@@ -13,23 +13,35 @@ drop function if exists push_relay_notify_status_change();
 -- CREATING_STRUCTURED --
 -- view
 CREATE VIEW push_relay_events_context AS
-SELECT
-    t1.co_seq_atend,
-	t6.nu_cns as prof_cns,
-	t8.co_cbo_2002 AS prof_cbo,
-	t9.nu_cnes as cnes,
-	trim(replace (t2.no_status_atend,'EM','')) as local_chamada,
-	UPPER(t4.no_cidadao) as cidadao
-FROM
-    tb_atend t1
-LEFT JOIN tb_status_atend t2 ON t2.co_status_atend = t1.st_atend
-LEFT JOIN tb_prontuario t3 ON t3.co_seq_prontuario = t1.co_prontuario
-LEFT JOIN tb_cidadao t4 ON t4.co_seq_cidadao = t3.co_cidadao
-LEFT JOIN tb_ator_papel t5 ON t1.co_responsavel = t5.co_seq_ator_papel
-LEFT JOIN tb_prof t6 ON t6.co_seq_prof = t5.co_prof
-LEFT JOIN tb_lotacao t7 ON t7.co_prof = t6.co_seq_prof
-LEFT JOIN tb_cbo t8 ON t8.co_cbo = t7.co_cbo
-LEFT JOIN tb_unidade_saude t9 ON t1.co_unidade_saude = t9.co_seq_unidade_saude;
+select
+	t1.co_seq_atend,
+	tp2.nu_cns as prof_cns,
+	tc2.co_cbo_2002 as prof_cbo,
+	tus.nu_cnes as cnes ,
+	trim(replace (tsa.no_status_atend, 'EM', '')) as local_chamada,
+	UPPER(tc.no_cidadao) as cidadao
+from
+	tb_atend t1
+join tb_atend_prof tap on
+	t1.co_seq_atend = tap.co_atend
+join tb_lotacao tl on
+	tap.co_lotacao = tl.co_ator_papel
+join tb_cbo tc2 on
+	tl.co_cbo = tc2.co_cbo
+join tb_prontuario tp on
+	t1.co_prontuario = tp.co_seq_prontuario
+join tb_cidadao tc on
+	tp.co_cidadao = tc.co_seq_cidadao
+join tb_unidade_saude tus on
+	t1.co_unidade_saude = tus.co_seq_unidade_saude
+join tb_status_atend tsa on
+	t1.st_atend = tsa.co_status_atend
+join tb_prof tp2 on
+	tl.co_prof = tp2.co_seq_prof
+where
+	to_char(t1.dt_criacao_registro ,
+	'dd/mm/yyyy') = to_char(now() ,
+	'dd/mm/yyyy');
 
 
 -- table
