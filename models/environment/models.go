@@ -40,7 +40,8 @@ type Database struct {
 
 // Application define a configuração da aplicação
 type Application struct {
-	TimeoutConnection time.Duration `toml:"timeout_connection_in_seconds"`
+	TimeoutConnection time.Duration `toml:"TimeoutConnectionInSeconds"`
+	HttpDebug         bool          `toml:"HttpDebug"`
 }
 
 // Config é a estrutura principal que contém todas as outras configurações do ambiente
