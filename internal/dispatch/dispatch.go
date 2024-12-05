@@ -36,12 +36,17 @@ func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error)
 		cnes = ""
 	}
 
+	localChamada, ok := receivedJSON["local_chamada"].(string)
+	if !ok {
+		localChamada = ""
+	}
+
 	environment, err := utils.LoadConfig()
 	if err != nil {
 		return panels.APIPayload{}, err
 	}
 
-	painelQueue, err := associations.LoadPainel(environment.Panels, cnes, idCbo)
+	painelQueue, err := associations.LoadPainel(environment.Panels, cnes, idCbo, localChamada)
 	if err != nil {
 		return panels.APIPayload{}, err
 	}
@@ -77,19 +82,15 @@ func SendMessage(payload panels.APIPayload) error {
 	var trace *httptrace.ClientTrace
 	if apiConfig.Application.HttpDebug {
 		trace = &httptrace.ClientTrace{
-			// Início da consulta DNS
 			DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
 				logger.GetLogger().Infof("Iniciando consulta DNS para %v\n", dnsInfo.Host)
 			},
-			// Fim da consulta DNS
 			DNSDone: func(dnsInfo httptrace.DNSDoneInfo) {
 				logger.GetLogger().Infof("Consulta DNS concluída: %v\n", dnsInfo.Addrs)
 			},
-			// Início da conexão TCP
 			ConnectStart: func(network, addr string) {
 				logger.GetLogger().Infof("Iniciando conexão para %v\n", addr)
 			},
-			// Fim da conexão TCP
 			ConnectDone: func(network, addr string, err error) {
 				if err != nil {
 					logger.GetLogger().Infof("Erro na conexão para %v: %v\n", addr, err)
@@ -97,7 +98,6 @@ func SendMessage(payload panels.APIPayload) error {
 					logger.GetLogger().Infof("Conexão estabelecida para %v\n", addr)
 				}
 			},
-			// Quando a conexão é obtida (reutilizada ou nova)
 			GotConn: func(connInfo httptrace.GotConnInfo) {
 				if connInfo.Reused {
 					logger.GetLogger().Infof("Conexão reutilizada: %v\n", connInfo.Reused)

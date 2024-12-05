@@ -33,6 +33,7 @@ func newConfig() *environment.Config {
 					Cnes:        "2382857",
 					Description: "Painel Procedimentos",
 					Cbos:        []string{},
+					Type:        "atendimento",
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
@@ -41,6 +42,7 @@ func newConfig() *environment.Config {
 					Cnes:        "2382857",
 					Description: "Painel Exames",
 					Cbos:        []string{"2251", "2252"},
+					Type:        "atendimento",
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
@@ -49,6 +51,7 @@ func newConfig() *environment.Config {
 					Cnes:        "2382857",
 					Description: "Painel Vacinas",
 					Cbos:        []string{"2251", "2252"},
+					Type:        "atendimento",
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
@@ -57,6 +60,7 @@ func newConfig() *environment.Config {
 					Cnes:        "2382857",
 					Description: "Painel Triagem",
 					Cbos:        []string{"3222"},
+					Type:        "triagem",
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
@@ -65,6 +69,7 @@ func newConfig() *environment.Config {
 					Cnes:        "2382857",
 					Description: "Painel Consultório Médico",
 					Cbos:        []string{"2251", "2252", "2235", "2239", "2237"},
+					Type:        "atendimento",
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},
@@ -73,6 +78,7 @@ func newConfig() *environment.Config {
 					Cnes:        "2382857",
 					Description: "Painel Consultório Odontológico",
 					Cbos:        []string{"2232", "322425", "322415"},
+					Type:        "atendimento",
 					Queue: environment.Queue{
 						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
 					},

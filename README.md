@@ -20,7 +20,8 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
 
 ```
 [application]
-  timeout_connection_in_seconds = 10
+  TimeoutConnectionInSeconds = 10
+  HttpDebug = false
 
 [api]
   endpoint = "https://webhook-test.com/76d788b20b7f99c5bcb6a608ae281ef4"
@@ -41,6 +42,8 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
     description = "Painel Procedimentos"
     cbos = []
     services = ["9", "2", "8"]
+    # atendimento | triagem
+    type = "nil"
     [panels.items.queue]
     panelUuid =  "eb6e9c6b-a196-42ed-8847-752da50bf95c"
     sectorUuid = "631da7f0-fe75-44fc-85c0-bafb56ab12d1"
@@ -50,6 +53,8 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
     description = "Painel Exames"
     cbos = ["2251", "2252"]
     services = ["5"]
+    # atendimento | triagem
+    type = "nil"
     [panels.items.queue]
     panelUuid =  "eb6e9c6b-a196-42ed-8847-752da50bf95c"
     sectorUuid = "631da7f0-fe75-44fc-85c0-bafb56ab12d1"
@@ -59,6 +64,8 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
     description = "Painel Vacinas"
     cbos = ["2251", "2252"]
     services = ["3"]
+    # atendimento | triagem
+    type = "nil"
     [panels.items.queue]
     panelUuid =  "eb6e9c6b-a196-42ed-8847-752da50bf95c"
     sectorUuid = "631da7f0-fe75-44fc-85c0-bafb56ab12d1"
@@ -68,6 +75,8 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
     description = "Painel Triagem"
     cbos = ["3222"]
     services = ["7"]
+    # atendimento | triagem
+    type = "triagem"
     [panels.items.queue]
     panelUuid =  "eb6e9c6b-a196-42ed-8847-752da50bf95c"
     sectorUuid = "631da7f0-fe75-44fc-85c0-bafb56ab12d1"
@@ -77,6 +86,8 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
     description = "Painel Consultório Médico"
     cbos = ["2251", "2252", "2235", "2239", "2237"]
     services = ["1","6"]
+    # atendimento | triagem
+    type = "atendimento"
     [panels.items.queue]
     panelUuid =  "eb6e9c6b-a196-42ed-8847-752da50bf95c"
     sectorUuid = "631da7f0-fe75-44fc-85c0-bafb56ab12d1"
@@ -86,6 +97,8 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
     description = "Painel Consultório Odontológico"
     cbos = ["2232", "322425", "322415"]
     services = ["10", "11", "12", "15", "16", "18", "19"]
+    # atendimento | triagem
+    type = "atendimento"
     [panels.items.queue]
     panelUuid =  "eb6e9c6b-a196-42ed-8847-752da50bf95c"
     sectorUuid = "631da7f0-fe75-44fc-85c0-bafb56ab12d1"

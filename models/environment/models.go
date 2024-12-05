@@ -12,6 +12,7 @@ type Queue struct {
 type PanelItem struct {
 	Cnes        string   `toml:"cnes"`
 	Description string   `toml:"description"`
+	Type        string   `toml:"type"`
 	Cbos        []string `toml:"cbos"`
 	Services    []string `toml:"services"`
 	Queue       Queue    `toml:"queue"`
