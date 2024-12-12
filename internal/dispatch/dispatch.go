@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
@@ -17,26 +18,26 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error) {
+func MakePayload(notificationPayload string) (panels.APIPayload, error) {
+
+	var notificationParsed map[string]interface{}
+	if err := json.Unmarshal([]byte(notificationPayload), &notificationParsed); err != nil {
+		log.Fatal("Error parsing notification payload:", err)
+	}
 
 	logger.GetLogger().Info("Dispach.MakePayload.start")
 
-	cidadao, ok := receivedJSON["cidadao"].(string)
+	cidadao, ok := notificationParsed["cidadao"].(string)
 	if !ok {
 		cidadao = "Unknown"
 	}
 
-	idCbo, ok := receivedJSON["prof_cbo"].(string)
-	if !ok {
-		idCbo = ""
-	}
-
-	cnes, ok := receivedJSON["cnes"].(string)
+	cnes, ok := notificationParsed["cnes"].(string)
 	if !ok {
 		cnes = ""
 	}
 
-	localChamada, ok := receivedJSON["local_chamada"].(string)
+	localChamada, ok := notificationParsed["local_chamada"].(string)
 	if !ok {
 		localChamada = ""
 	}
@@ -46,13 +47,13 @@ func MakePayload(receivedJSON map[string]interface{}) (panels.APIPayload, error)
 		return panels.APIPayload{}, err
 	}
 
-	painelQueue, err := associations.LoadPainel(environment.Panels, cnes, idCbo, localChamada)
+	painelQueue, err := associations.LoadPainel(environment.Panels, cnes, localChamada)
 	if err != nil {
 		return panels.APIPayload{}, err
 	}
 
 	payload := panels.APIPayload{
-		Context:            receivedJSON,
+		Context:            notificationParsed,
 		NomePaciente:       cidadao,
 		IdPainel:           painelQueue.PanelUuid,
 		IdLocalAtendimento: painelQueue.SectorUuid,

@@ -42,7 +42,7 @@ func Connect() (*pgx.Conn, error) {
 }
 
 func ListenForNotifications(conn *pgx.Conn) error {
-	_, err := conn.Exec(context.Background(), "LISTEN status_change")
+	_, err := conn.Exec(context.Background(), "LISTEN call_record")
 	if err != nil {
 		return err
 	}
@@ -88,23 +88,22 @@ func StartNotifications() {
 			log.Fatal("Error waiting for notification:", err)
 		}
 
-		// Parse JSON da notificação
-		var notificationJSON map[string]interface{}
-		if err := json.Unmarshal([]byte(notification.Payload), &notificationJSON); err != nil {
-			log.Fatal("Error parsing notification payload:", err)
-		}
+		if json.Valid([]byte(notification.Payload)) {
 
-		// Enviar para API
-		payload, err := dispatch.MakePayload(notificationJSON)
-		if err != nil {
-			log.Errorln("Error:", err)
-			return
-		}
+			// Enviar para API
+			payload, err := dispatch.MakePayload(notification.Payload)
+			if err != nil {
+				log.Errorln("Error:", err)
+				return
+			}
 
-		if err := dispatch.SendMessage(payload); err != nil {
-			log.Errorln("Error sending to API:", err)
+			if err := dispatch.SendMessage(payload); err != nil {
+				log.Errorln("Error sending to API:", err)
+			} else {
+				log.Info("Notification sent to API successfully!")
+			}
 		} else {
-			log.Info("Notification sent to API successfully!")
+			log.Warning("Query without returning records. Check params date your query")
 		}
 	}
 }
