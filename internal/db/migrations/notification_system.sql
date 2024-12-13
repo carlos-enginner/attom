@@ -56,7 +56,7 @@ $$ language plpgsql;
 
 -- trigger
 CREATE TRIGGER push_relay_trigger_status_change
-    AFTER update 
+    AFTER INSERT OR UPDATE
     ON public.tb_atend_prof
     FOR EACH ROW
     EXECUTE PROCEDURE public.push_relay_notify_status_change();
