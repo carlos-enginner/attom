@@ -1,173 +1,406 @@
 package cmd
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"net/url"
+	"os"
+	"src/post_relay/internal/db"
+	"src/post_relay/internal/logger"
+	"src/post_relay/internal/utils"
+	"strings"
+	"time"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/rand"
 )
 
-// type model struct {
-// 	flavors, adds []item
-// 	list, item    int
+// type Model struct {
+// 	form *huh.Form // huh.Form is just a tea.Model
 // }
 
-// type item struct {
-// 	text    string
-// 	checked bool
+// func NewModel() Model {
+// 	var unidadeSelected string
+// 	var loadingUnidades bool = true
+// 	var tipoSelected string
+// 	return Model{
+// 		form: huh.NewForm(
+// 			huh.NewGroup(
+
+// 				huh.NewSelect[string]().
+// 					Height(8).
+// 					Title("Unidades").
+// 					Key("field_unidades").
+// 					Value(&unidadeSelected).
+// 					OptionsFunc(func() []huh.Option[string] {
+// 						return huh.NewOptions(
+// 							"unidade 1",
+// 							"unidade 2",
+// 							"unidade 3",
+// 						)
+// 					}, &loadingUnidades),
+
+// 				huh.NewSelect[string]().
+// 					Height(8).
+// 					Title("Paineis").
+// 					Key("field_paineis").
+// 					OptionsFunc(func() []huh.Option[string] {
+// 						var options []string
+// 						switch unidadeSelected {
+// 						case "unidade 1":
+// 							options = []string{"Opção 1.1", "Opção 1.2", "Opção 1.3"}
+// 						case "unidade 2":
+// 							options = []string{"Opção 2.1", "Opção 2.2", "Opção 2.3"}
+// 						case "unidade 3":
+// 							options = []string{"Opção 3.1", "Opção 3.2", "Opção 3.3"}
+// 						default:
+// 							options = []string{}
+// 						}
+// 						return huh.NewOptions(options...)
+// 					}, &unidadeSelected),
+
+// 				huh.NewSelect[string]().
+// 					Height(8).
+// 					Title("Tipos").
+// 					Key("field_tipos").
+// 					OptionsFunc(func() []huh.Option[string] {
+// 						var options = []string{"Opção 3.1", "Opção 3.2", "Opção 3.3"}
+// 						return huh.NewOptions(options...)
+// 					}, &tipoSelected),
+
+// 				huh.NewConfirm().
+// 					Title("Confirma registro?"),
+// 			),
+// 		),
+// 	}
 // }
 
-// func (m *model) Init() tea.Cmd {
-// 	return nil
+// func (m Model) Init() tea.Cmd {
+// 	return m.form.Init()
 // }
 
-// func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-// 	switch typed := msg.(type) {
+// func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
+// 	switch msg := msg.(type) {
 // 	case tea.KeyMsg:
-// 		return m, m.handleKeyMsg(typed)
+// 		switch msg.String() {
+// 		case "esc", "ctrl+c", "q":
+// 			return m, tea.Quit
+// 		}
 // 	}
-// 	return m, nil
-// }
 
-// func (m *model) handleKeyMsg(msg tea.KeyMsg) tea.Cmd {
-// 	switch msg.String() {
-// 	case "esc", "ctrl+c":
-// 		return tea.Quit
-// 	case " ", "enter":
-// 		switch m.list {
-// 		case 0:
-// 			m.flavors[m.item].checked = !m.flavors[m.item].checked
-// 		case 1:
-// 			m.adds[m.item].checked = !m.adds[m.item].checked
-// 		}
-// 	case "up":
-// 		if m.item > 0 {
-// 			m.item--
-// 		} else if m.list > 0 {
-// 			m.list--
-// 			m.item = len(m.flavors) - 1
-// 		}
-// 	case "down":
-// 		switch m.list {
-// 		case 0:
-// 			if m.item+1 < len(m.flavors) {
-// 				m.item++
-// 			} else {
-// 				m.list++
-// 				m.item = 0
-// 			}
-// 		case 1:
-// 			if m.item+1 < len(m.adds) {
-// 				m.item++
+// 	var cmds []tea.Cmd
+
+// 	// process the form
+// 	form, cmd := m.form.Update(msg)
+// 	if f, ok := form.(*huh.Form); ok {
+// 		m.form = f
+// 		cmds = append(cmds, cmd)
+// 	}
+
+// 	if m.form.State == huh.StateCompleted {
+// 		switch msg := msg.(type) {
+// 		case tea.KeyMsg:
+// 			switch msg.String() {
+// 			case "enter":
+// 				return m, tea.Quit
 // 			}
 // 		}
 // 	}
-// 	return nil
+
+// 	return m, tea.Batch(cmds...)
 // }
 
-// func (m *model) View() string {
-// 	curFlavor, curAdd := -1, -1
-// 	switch m.list {
-// 	case 0:
-// 		curFlavor = m.item
-// 	case 1:
-// 		curAdd = m.item
+// func (m Model) View() string {
+// 	if m.form.State == huh.StateCompleted {
+// 		unidades := m.form.GetString("field_unidades")
+// 		paineis := m.form.GetString("field_paineis")
+// 		tipos := m.form.GetString("field_tipos")
+
+// 		return fmt.Sprintf("panel added %s - %s - %s. Press enter for exit", unidades, paineis, tipos)
 // 	}
-// 	return m.renderList("choose two flavors", m.flavors, curFlavor) +
-// 		"\n" +
-// 		m.renderList("select adds", m.adds, curAdd)
+// 	return m.form.View()
 // }
 
-// func (m *model) renderList(header string, items []item, selected int) string {
-// 	out := "~ " + header + ":\n"
-// 	for i, item := range items {
-// 		sel := " "
-// 		if i == selected {
-// 			sel = ">"
-// 		}
-// 		check := " "
-// 		if items[i].checked {
-// 			check = "✓"
-// 		}
-// 		out += fmt.Sprintf("%s [%s] %s\n", sel, check, item.text)
-// 	}
-// 	return out
-// }
+var (
+	spinnerStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("63"))
+	helpStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Margin(1, 0)
+	dotStyle      = helpStyle.UnsetMargins()
+	durationStyle = dotStyle
+	appStyle      = lipgloss.NewStyle().Margin(1, 2, 0, 2)
+)
 
-type Model struct {
-	form *huh.Form // huh.Form is just a tea.Model
+type resultMsg struct {
+	duration time.Duration
+	food     string
 }
 
-func NewModel() Model {
+func (r resultMsg) String() string {
+	if r.duration == 0 {
+		return dotStyle.Render(strings.Repeat(".", 30))
+	}
+	return fmt.Sprintf("🍔 Ate %s %s", r.food,
+		durationStyle.Render(r.duration.String()))
+}
+
+func getUnidades() []string {
+	conn, err := db.Connect()
+	// Conectar ao banco de dados
+	if err != nil {
+		log.Fatal("Error connecting to database:", err)
+	}
+	defer conn.Close(context.Background())
+
+	unidades, err := db.GetUnidades(conn)
+	if err != nil {
+		log.Fatalf("Error retrieving unidades: %v", err)
+	}
+
+	var options []string
+	for _, unidade := range unidades {
+		options = append(options, unidade.NuCnes+" - "+unidade.NomeUnidade)
+	}
+
+	return options
+}
+
+func getPaineisOld(unidade string) []string {
+
+	var options []string
+
+	options = []string{"Opção0" + unidade, "Opção00", "Opção000"}
+
+	return options
+}
+
+type model struct {
+	spinner   spinner.Model
+	results   []resultMsg
+	quitting  bool
+	confirmed bool
+	form      *huh.Form
+}
+type LocalAtendimento struct {
+	ID   string `json:"id"`
+	Nome string `json:"nome"`
+}
+
+type Painel struct {
+	Descricao        string             `json:"descricao"`
+	IDPainel         string             `json:"idPainel"`
+	NomePainel       string             `json:"nomePainel"`
+	DuracaoChamada   int                `json:"duracaoChamada"`
+	LocalAtendimento []LocalAtendimento `json:"localAtendimento"`
+}
+
+type APIResponse struct {
+	Error bool     `json:"error"`
+	Msg   string   `json:"msg"`
+	Obj   []Painel `json:"obj"`
+}
+
+func getPaineis(unidade string) []string {
+
+	apiConfig, err := utils.LoadConfig()
+	if err != nil {
+		logger.GetLogger().Errorf("erro ao carregar configuração do webhook: %v", err)
+	}
+
+	// URL da API
+	endpoint := "http://painel.icsgo.com.br:7001/ws/v1/estabelecimentos/2569841/paineis"
+
+	// Cabeçalhos necessários
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		log.Fatalf("Erro ao criar requisição: %v", err)
+	}
+
+	req.Header = http.Header{
+		"Content-Type":  {"application/json"},
+		"Authorization": {apiConfig.API.Token},
+		"ibge":          {apiConfig.API.IBGE},
+	}
+
+	client := &http.Client{
+		Timeout: 20 * time.Second,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		if err, ok := err.(*url.Error); ok && err.Timeout() {
+			logger.GetLogger().WithFields(logrus.Fields{
+				"error": err,
+				"type":  "timeout",
+			}).Error("Timeout ao tentar conectar com a API")
+		} else {
+			logger.GetLogger().WithFields(logrus.Fields{
+				"error": err,
+				"type":  "connection",
+			}).Error("Erro ao enviar requisição para API")
+		}
+	}
+	defer resp.Body.Close()
+
+	// Lendo a resposta
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Erro ao ler a resposta: %v", err)
+	}
+
+	// Verificando o status da resposta
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("Erro: Status code %d", resp.StatusCode)
+	}
+
+	// Mapear a resposta para a estrutura Go
+	var apiResp APIResponse
+	if err := json.Unmarshal(body, &apiResp); err != nil {
+		log.Fatalf("Erro ao deserializar o JSON: %v", err)
+	}
+
+	// Verificando se houve erro no campo 'error' da resposta
+	if apiResp.Error {
+		log.Fatalf("Erro na resposta da API: %s", apiResp.Msg)
+	}
+
+	var options []string
+	for _, painel := range apiResp.Obj {
+		for _, local := range painel.LocalAtendimento {
+			options = append(options, fmt.Sprintf("%s - %s %s - %s", painel.NomePainel, painel.IDPainel, local.Nome, local.ID))
+
+		}
+	}
+
+	return options
+}
+
+func getTipos() []string {
+	conn, err := db.Connect()
+	// Conectar ao banco de dados
+	if err != nil {
+		log.Fatal("Error connecting to database:", err)
+	}
+	defer conn.Close(context.Background())
+
+	tipos, err := db.GetTipos(conn)
+	if err != nil {
+		log.Fatalf("Error retrieving unidades: %v", err)
+	}
+
+	var options []string
+	for _, tipo := range tipos {
+		options = append(options, fmt.Sprintf("%s", tipo.Descricao))
+	}
+
+	return options
+}
+
+func newModel() model {
+
 	var unidadeSelected string
-	// var paineis string
 	var tipoSelected string
-	return Model{
-		form: huh.NewForm(
-			huh.NewGroup(
 
-				huh.NewSelect[string]().
-					Height(8).
-					Title("Unidades").
-					Key("field_unidades").
-					Value(&unidadeSelected).
-					OptionsFunc(func() []huh.Option[string] {
-						return huh.NewOptions(
-							"unidade 1",
-							"unidade 2",
-							"unidade 3",
-						)
-					}, nil),
+	const numLastResults = 5
+	s := spinner.New()
+	s.Style = spinnerStyle
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Height(8).
+				Title("Tipo do painel").
+				Key("field_tipos").
+				Value(&tipoSelected).
+				OptionsFunc(func() []huh.Option[string] {
+					var options = getTipos()
+					return huh.NewOptions(options...)
+				}, &tipoSelected),
 
-				huh.NewSelect[string]().
-					Height(8).
-					Title("Paineis").
-					Key("field_paineis").
-					OptionsFunc(func() []huh.Option[string] {
-						var options []string
-						switch unidadeSelected {
-						case "unidade 1":
-							options = []string{"Opção 1.1", "Opção 1.2", "Opção 1.3"}
-						case "unidade 2":
-							options = []string{"Opção 2.1", "Opção 2.2", "Opção 2.3"}
-						case "unidade 3":
-							options = []string{"Opção 3.1", "Opção 3.2", "Opção 3.3"}
-						default:
-							options = []string{}
-						}
-						return huh.NewOptions(options...)
-					}, &unidadeSelected),
-
-				huh.NewSelect[string]().
-					Height(8).
-					Title("Tipos").
-					Key("field_tipos").
-					OptionsFunc(func() []huh.Option[string] {
-						var options = []string{"Opção 3.1", "Opção 3.2", "Opção 3.3"}
-						return huh.NewOptions(options...)
-					}, &tipoSelected),
-
-				huh.NewConfirm().
-					Title("Confirma registro?"),
-			),
+			huh.NewSelect[string]().
+				Height(8).
+				Title("Unidade de saúde").
+				Key("field_unidades").
+				Value(&unidadeSelected).
+				OptionsFunc(func() []huh.Option[string] {
+					var options = getUnidades()
+					return huh.NewOptions(options...)
+				}, nil),
 		),
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Height(8).
+				TitleFunc((func() string {
+					return "Paineis do Munícipio: " + unidadeSelected
+				}), &unidadeSelected).
+				Key("field_paineis").
+				OptionsFunc(func() []huh.Option[string] {
+					var options = getPaineis(unidadeSelected)
+					return huh.NewOptions(options...)
+				}, &unidadeSelected),
+
+			huh.NewConfirm().
+				Key("btn_confirm").
+				TitleFunc(func() string {
+					return "Confirma registro do painel: " + tipoSelected + "?"
+				}, &tipoSelected).Affirmative("Sim").Negative("Não"),
+		),
+	)
+
+	return model{
+		spinner: s,
+		results: make([]resultMsg, numLastResults),
+		form:    form,
 	}
 }
 
-func (m Model) Init() tea.Cmd {
-	return m.form.Init()
+func (m model) Init() tea.Cmd {
+	return m.spinner.Tick
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// switch msg := msg.(type) {
+	// case tea.KeyMsg:
+	// 	m.quitting = true
+	// 	return m, tea.Quit
+	// case resultMsg:
+	// 	m.results = append(m.results[1:], msg)
+	// 	return m, nil
+	// case spinner.TickMsg:
+	// 	var cmd tea.Cmd
+	// 	m.spinner, cmd = m.spinner.Update(msg)
+	// 	return m, cmd
+	// case huh.Form:
+	// 	var cmd tea.Cmd
+	// 	form, cmd := m.form.Update(msg)
+	// 	if f, ok := form.(*huh.Form); ok {
+	// 		m.form = f
+	// 	}
+	// 	return m, cmd
+	// default:
+	// 	return m, nil
+	// }
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc", "ctrl+c", "q":
+			m.quitting = true
+			return m, nil
+		case "n":
+			m.quitting = true
 			return m, tea.Quit
 		}
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
 	}
 
 	var cmds []tea.Cmd
@@ -192,15 +425,41 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
-	if m.form.State == huh.StateCompleted {
-		unidades := m.form.GetString("field_unidades")
-		paineis := m.form.GetString("field_paineis")
-		tipos := m.form.GetString("field_tipos")
+func (m model) View() string {
+	var s string
 
-		return fmt.Sprintf("panel added %s - %s - %s. Press enter for exit", unidades, paineis, tipos)
+	if m.quitting {
+		if m.form.State == huh.StateCompleted {
+
+			// unidades := m.form.GetString("field_unidades")
+			// paineis := m.form.GetString("field_paineis")
+			// tipos := m.form.GetString("field_tipos")
+			btnConfirm := m.form.GetBool("btn_confirm")
+
+			// parei aqui. agora é criar a função para incluir no arquivo de configuração o painel selecionado
+			// tem que fazer o filtro no cnes da unidade na hora de buscar os paineis
+
+			if btnConfirm {
+				return "Registered panel. Press enter for exit"
+			} else {
+				return "Operation cancelled. Press enter for exit"
+			}
+
+		}
+		return m.form.View()
+	} else {
+		s += m.spinner.View() + " Loading data..."
 	}
-	return m.form.View()
+
+	// if !m.quitting {
+	// 	s += helpStyle.Render("Press any key to exit")
+	// }
+
+	// if m.quitting {
+	// 	s += "\n"
+	// }
+
+	return appStyle.Render(s)
 }
 
 func PanelNewRegister() *cobra.Command {
@@ -209,49 +468,34 @@ func PanelNewRegister() *cobra.Command {
 		Short: "New Panel Register",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			// var unidades string
-			// // var panels string
-			// var types string
+			p := tea.NewProgram(newModel())
 
-			// form := huh.NewForm(
-			// 	huh.NewGroup(
-			// 		huh.NewSelect[string]().
-			// 			Options(huh.NewOptions("United States", "Canada", "Mexico")...).
-			// 			Value(&unidades).
-			// 			Title("Unidades"),
+			// Simulate activity
+			go func() {
+				for {
+					pause := time.Duration(rand.Int63n(899)+100) * time.Millisecond // nolint:gosec
+					time.Sleep(pause)
 
-			// 		huh.NewSelect[string]().
-			// 			Height(8).
-			// 			Title("Paineis").
-			// 			OptionsFunc(func() []huh.Option[string] {
-			// 				opts := []string{
-			// 					"painel 1",
-			// 					"painel 2",
-			// 					"painel 3"}
-			// 				return huh.NewOptions(opts...)
-			// 			}, &unidades),
+					// Send the Bubble Tea program a message from outside the
+					// tea.Program. This will block until it is ready to receive
+					// messages.
+					p.Send(resultMsg{food: randomFood(), duration: pause})
+				}
+			}()
 
-			// 		huh.NewSelect[string]().
-			// 			Height(8).
-			// 			Title("Tipos").
-			// 			OptionsFunc(func() []huh.Option[string] {
-			// 				opts := []string{
-			// 					"tipo1", "tipo2"}
-			// 				return huh.NewOptions(opts...)
-			// 			}, &types),
-
-			// 		huh.NewConfirm().
-			// 			Title("Confirma inclusão?"),
-			// 	),
-			// )
-
-			p := tea.NewProgram(NewModel())
-			_, err := p.Run()
-			if err != nil {
-				log.Fatal(err)
+			if _, err := p.Run(); err != nil {
+				fmt.Println("Error running program:", err)
+				os.Exit(1)
 			}
-
-			fmt.Println("Done")
 		},
 	}
+}
+
+func randomFood() string {
+	food := []string{
+		"an apple", "a pear", "a gherkin", "a party gherkin",
+		"a kohlrabi", "some spaghetti", "tacos", "a currywurst", "some curry",
+		"a sandwich", "some peanut butter", "some cashews", "some ramen",
+	}
+	return food[rand.Intn(len(food))] // nolint:gosec
 }
