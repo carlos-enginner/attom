@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"errors"
+	"fmt"
 	"log"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
@@ -104,100 +105,148 @@ var (
 // 	return out
 // }
 
+type Model struct {
+	form *huh.Form // huh.Form is just a tea.Model
+}
+
+func NewModel() Model {
+	var unidades string
+	// var panels string
+	var types string
+	return Model{
+		form: huh.NewForm(
+			huh.NewGroup(
+				huh.NewSelect[string]().
+					Key("units").
+					Options(huh.NewOptions("United States", "Canada", "Mexico")...).
+					Value(&unidades).
+					Title("Unidades"),
+
+				huh.NewSelect[string]().
+					Height(8).
+					Title("Paineis").
+					Key("panels").
+					OptionsFunc(func() []huh.Option[string] {
+						opts := []string{
+							"painel 1",
+							"painel 2",
+							"painel 3"}
+						return huh.NewOptions(opts...)
+					}, &unidades),
+
+				huh.NewSelect[string]().
+					Height(8).
+					Title("Tipos").
+					Key("types").
+					OptionsFunc(func() []huh.Option[string] {
+						opts := []string{
+							"tipo1", "tipo2"}
+						return huh.NewOptions(opts...)
+					}, &types),
+
+				huh.NewConfirm().
+					Title("Confirma inclusão?"),
+			),
+		),
+	}
+}
+
+func (m Model) Init() tea.Cmd {
+	return m.form.Init()
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "esc", "ctrl+c", "q":
+			return m, tea.Quit
+		}
+	}
+
+	var cmds []tea.Cmd
+
+	// process the form
+	form, cmd := m.form.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		m.form = f
+		cmds = append(cmds, cmd)
+	}
+
+	if m.form.State == huh.StateCompleted {
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "enter":
+				return m, tea.Quit
+			}
+		}
+	}
+
+	return m, tea.Batch(cmds...)
+}
+
+func (m Model) View() string {
+	if m.form.State == huh.StateCompleted {
+		units := m.form.GetString("units")
+		panels := m.form.GetString("panels")
+		types := m.form.GetString("types")
+
+		return fmt.Sprintf("panel added %s - %s - %s. Press enter for exit", units, types, panels)
+	}
+	return m.form.View()
+}
+
 func PanelNewRegister() *cobra.Command {
 	return &cobra.Command{
 		Use:   "new_panel",
 		Short: "New Panel Register",
 		Run: func(cmd *cobra.Command, args []string) {
-			// m := &model{
-			// 	flavors: []item{
-			// 		{"orange", false},
-			// 		{"strawberry", false},
-			// 		{"watermelon", false},
-			// 		{"apple", false},
-			// 	},
-			// 	adds: []item{
-			// 		{"candies", false},
-			// 		{"mixed colors", false},
-			// 		{"strange glass shape", false},
-			// 	},
-			// }
-			// p := tea.NewProgram(m)
 
-			// if _, err := p.Run(); err != nil {
-			// 	panic(fmt.Sprintf("failed to run program: %v", err))
-			// }
+			// var unidades string
+			// // var panels string
+			// var types string
 
-			form := huh.NewForm(
-				huh.NewGroup(
-					// Ask the user for a base burger and toppings.
-					huh.NewSelect[string]().
-						Title("Choose your burger").
-						Options(
-							huh.NewOption("Charmburger Classic", "classic"),
-							huh.NewOption("Chickwich", "chickwich"),
-							huh.NewOption("Fishburger", "fishburger"),
-							huh.NewOption("Charmpossible™ Burger", "charmpossible"),
-						).
-						Value(&burger), // store the chosen option in the "burger" variable
+			// form := huh.NewForm(
+			// 	huh.NewGroup(
+			// 		huh.NewSelect[string]().
+			// 			Options(huh.NewOptions("United States", "Canada", "Mexico")...).
+			// 			Value(&unidades).
+			// 			Title("Unidades"),
 
-					// Let the user select multiple toppings.
-					huh.NewMultiSelect[string]().
-						Title("Toppings").
-						Options(
-							huh.NewOption("Lettuce", "lettuce").Selected(true),
-							huh.NewOption("Tomatoes", "tomatoes").Selected(true),
-							huh.NewOption("Jalapeños", "jalapeños"),
-							huh.NewOption("Cheese", "cheese"),
-							huh.NewOption("Vegan Cheese", "vegan cheese"),
-							huh.NewOption("Nutella", "nutella"),
-						).
-						Limit(4). // there’s a 4 topping limit!
-						Value(&toppings),
+			// 		huh.NewSelect[string]().
+			// 			Height(8).
+			// 			Title("Paineis").
+			// 			OptionsFunc(func() []huh.Option[string] {
+			// 				opts := []string{
+			// 					"painel 1",
+			// 					"painel 2",
+			// 					"painel 3"}
+			// 				return huh.NewOptions(opts...)
+			// 			}, &unidades),
 
-					// Option values in selects and multi selects can be any type you
-					// want. We’ve been recording strings above, but here we’ll store
-					// answers as integers. Note the generic "[int]" directive below.
-					huh.NewSelect[int]().
-						Title("How much Charm Sauce do you want?").
-						Options(
-							huh.NewOption("None", 0),
-							huh.NewOption("A little", 1),
-							huh.NewOption("A lot", 2),
-						).
-						Value(&sauceLevel),
-				),
+			// 		huh.NewSelect[string]().
+			// 			Height(8).
+			// 			Title("Tipos").
+			// 			OptionsFunc(func() []huh.Option[string] {
+			// 				opts := []string{
+			// 					"tipo1", "tipo2"}
+			// 				return huh.NewOptions(opts...)
+			// 			}, &types),
 
-				// Gather some final details about the order.
-				huh.NewGroup(
-					huh.NewInput().
-						Title("What’s your name?").
-						Value(&name).
-						// Validating fields is easy. The form will mark erroneous fields
-						// and display error messages accordingly.
-						Validate(func(str string) error {
-							if str == "Frank" {
-								return errors.New("Sorry, we don’t serve customers named Frank.")
-							}
-							return nil
-						}),
+			// 		huh.NewConfirm().
+			// 			Title("Confirma inclusão?"),
+			// 	),
+			// )
 
-					huh.NewText().
-						Title("Special Instructions").
-						CharLimit(400).
-						Value(&instructions),
-
-					huh.NewConfirm().
-						Title("Would you like 15% off?").
-						Value(&discount),
-				),
-			)
-
-			err := form.Run()
+			p := tea.NewProgram(NewModel())
+			_, err := p.Run()
 			if err != nil {
 				log.Fatal(err)
 			}
 
+			fmt.Println("Done")
 		},
 	}
 }
