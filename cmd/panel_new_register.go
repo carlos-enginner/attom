@@ -9,15 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	burger       string
-	toppings     []string
-	sauceLevel   int
-	name         string
-	instructions string
-	discount     bool
-)
-
 // type model struct {
 // 	flavors, adds []item
 // 	list, item    int
@@ -110,42 +101,56 @@ type Model struct {
 }
 
 func NewModel() Model {
-	var unidades string
-	// var panels string
-	var types string
+	var unidadeSelected string
+	// var paineis string
+	var tipoSelected string
 	return Model{
 		form: huh.NewForm(
 			huh.NewGroup(
+
 				huh.NewSelect[string]().
-					Key("units").
-					Options(huh.NewOptions("United States", "Canada", "Mexico")...).
-					Value(&unidades).
-					Title("Unidades"),
+					Height(8).
+					Title("Unidades").
+					Key("field_unidades").
+					Value(&unidadeSelected).
+					OptionsFunc(func() []huh.Option[string] {
+						return huh.NewOptions(
+							"unidade 1",
+							"unidade 2",
+							"unidade 3",
+						)
+					}, nil),
 
 				huh.NewSelect[string]().
 					Height(8).
 					Title("Paineis").
-					Key("panels").
+					Key("field_paineis").
 					OptionsFunc(func() []huh.Option[string] {
-						opts := []string{
-							"painel 1",
-							"painel 2",
-							"painel 3"}
-						return huh.NewOptions(opts...)
-					}, &unidades),
+						var options []string
+						switch unidadeSelected {
+						case "unidade 1":
+							options = []string{"Opção 1.1", "Opção 1.2", "Opção 1.3"}
+						case "unidade 2":
+							options = []string{"Opção 2.1", "Opção 2.2", "Opção 2.3"}
+						case "unidade 3":
+							options = []string{"Opção 3.1", "Opção 3.2", "Opção 3.3"}
+						default:
+							options = []string{}
+						}
+						return huh.NewOptions(options...)
+					}, &unidadeSelected),
 
 				huh.NewSelect[string]().
 					Height(8).
 					Title("Tipos").
-					Key("types").
+					Key("field_tipos").
 					OptionsFunc(func() []huh.Option[string] {
-						opts := []string{
-							"tipo1", "tipo2"}
-						return huh.NewOptions(opts...)
-					}, &types),
+						var options = []string{"Opção 3.1", "Opção 3.2", "Opção 3.3"}
+						return huh.NewOptions(options...)
+					}, &tipoSelected),
 
 				huh.NewConfirm().
-					Title("Confirma inclusão?"),
+					Title("Confirma registro?"),
 			),
 		),
 	}
@@ -189,11 +194,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	if m.form.State == huh.StateCompleted {
-		units := m.form.GetString("units")
-		panels := m.form.GetString("panels")
-		types := m.form.GetString("types")
+		unidades := m.form.GetString("field_unidades")
+		paineis := m.form.GetString("field_paineis")
+		tipos := m.form.GetString("field_tipos")
 
-		return fmt.Sprintf("panel added %s - %s - %s. Press enter for exit", units, types, panels)
+		return fmt.Sprintf("panel added %s - %s - %s. Press enter for exit", unidades, paineis, tipos)
 	}
 	return m.form.View()
 }
