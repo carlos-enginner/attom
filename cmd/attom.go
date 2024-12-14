@@ -17,6 +17,7 @@ func init() {
 	rootCmd.AddCommand(DatabaseNotificationListenCmd())
 	rootCmd.AddCommand(ApplicationSelfUpdate())
 	rootCmd.AddCommand(ApplicationGetVersion())
+	rootCmd.AddCommand(PanelNewRegister())
 }
 
 // Execute executa o comando raiz
