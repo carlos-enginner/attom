@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -137,27 +138,6 @@ var (
 	appStyle      = lipgloss.NewStyle().Margin(1, 2, 0, 2)
 )
 
-func getUnidades() []string {
-	conn, err := db.Connect()
-	// Conectar ao banco de dados
-	if err != nil {
-		log.Fatal("Error connecting to database:", err)
-	}
-	defer conn.Close(context.Background())
-
-	unidades, err := db.GetUnidades(conn)
-	if err != nil {
-		log.Fatalf("Error retrieving unidades: %v", err)
-	}
-
-	var options []string
-	for _, unidade := range unidades {
-		options = append(options, unidade.NuCnes+" - "+unidade.NomeUnidade)
-	}
-
-	return options
-}
-
 type model struct {
 	spinner  spinner.Model
 	timer    time.Time // Marca quando o spinner começou
@@ -184,7 +164,30 @@ type APIResponse struct {
 	Obj   []Painel `json:"obj"`
 }
 
+func getUnidades() []string {
+	conn, err := db.Connect()
+	// Conectar ao banco de dados
+	if err != nil {
+		log.Fatal("Error connecting to database:", err)
+	}
+	defer conn.Close(context.Background())
+
+	unidades, err := db.GetUnidades(conn)
+	if err != nil {
+		log.Fatalf("Error retrieving unidades: %v", err)
+	}
+
+	var options []string
+	for _, unidade := range unidades {
+		options = append(options, unidade.NuCnes+" - "+unidade.NomeUnidade)
+	}
+
+	return options
+}
+
 func getPaineis(unidade string) []string {
+
+	time.Sleep(2 * time.Second)
 
 	apiConfig, err := utils.LoadConfig()
 	if err != nil {
@@ -257,7 +260,7 @@ func getPaineis(unidade string) []string {
 	}
 
 	if len(options) == 0 {
-		options = append(options, fmt.Sprintf("%s", "Nenhum painel encontrado"))
+		options = append(options, "nenhum painel encontrado")
 	}
 
 	return options
@@ -278,7 +281,7 @@ func getTipos() []string {
 
 	var options []string
 	for _, tipo := range tipos {
-		options = append(options, fmt.Sprintf("%s", tipo.Descricao))
+		options = append(options, tipo.Descricao)
 	}
 
 	return options
@@ -296,9 +299,24 @@ func newModel() model {
 
 	var unidadeSelected string
 	var tipoSelected string
+	var painelSelected string
 
 	s := spinner.New()
 	s.Style = spinnerStyle
+
+	newConfirm := huh.NewConfirm().
+		Key("btn_confirm").
+		Validate(func(b bool) error {
+			logger.GetLogger().Infof("btn_confirm: %s", painelSelected)
+			if painelSelected == "nenhum painel encontrado" {
+				return errors.New("não é possível seguir, desculpe")
+			}
+			return nil
+		}).
+		TitleFunc(func() string {
+			return "Confirma registro do painel: " + tipoSelected + "?"
+		}, &tipoSelected).Affirmative("Sim").Negative("Não")
+
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[string]().
@@ -320,24 +338,23 @@ func newModel() model {
 					var options = getUnidades()
 					return huh.NewOptions(options...)
 				}, nil),
-		),
-		huh.NewGroup(
+
 			huh.NewSelect[string]().
-				Height(8).
+				Height(5).
 				TitleFunc((func() string {
 					return "Paineis do Munícipio: " + unidadeSelected
 				}), &unidadeSelected).
 				Key("field_paineis").
+				Value(&painelSelected).
 				OptionsFunc(func() []huh.Option[string] {
-					var options = getPaineis(unidadeSelected)
+					var options []string
+					if unidadeSelected != "" {
+						options = getPaineis(unidadeSelected)
+					}
 					return huh.NewOptions(options...)
 				}, &unidadeSelected),
 
-			huh.NewConfirm().
-				Key("btn_confirm").
-				TitleFunc(func() string {
-					return "Confirma registro do painel: " + tipoSelected + "?"
-				}, &tipoSelected).Affirmative("Sim").Negative("Não"),
+			newConfirm,
 		),
 	)
 
