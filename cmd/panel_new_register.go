@@ -12,7 +12,6 @@ import (
 	"src/post_relay/internal/db"
 	"src/post_relay/internal/logger"
 	"src/post_relay/internal/utils"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -137,19 +136,6 @@ var (
 	durationStyle = dotStyle
 	appStyle      = lipgloss.NewStyle().Margin(1, 2, 0, 2)
 )
-
-type resultMsg struct {
-	duration time.Duration
-	food     string
-}
-
-func (r resultMsg) String() string {
-	if r.duration == 0 {
-		return dotStyle.Render(strings.Repeat(".", 30))
-	}
-	return fmt.Sprintf("🍔 Ate %s %s", r.food,
-		durationStyle.Render(r.duration.String()))
-}
 
 func getUnidades() []string {
 	conn, err := db.Connect()
@@ -293,9 +279,9 @@ func getTipos() []string {
 	return options
 }
 
-func registerPanel(unidades string, paineis string, tipos string) {
+func registerPanel(cnes string, panel string, tipos string) {
 
-	_, err := utils.SaveConfig()
+	_, err := utils.SaveConfig(cnes, panel, tipos)
 	if err != nil {
 		logger.GetLogger().Errorf("erro ao carregar configuração do webhook: %v", err)
 	}
@@ -353,7 +339,7 @@ func newModel() model {
 	return model{
 		spinner: s,
 		form:    form,
-		timeout: 2 * time.Second,
+		timeout: 1 * time.Second,
 		timer:   time.Now(),
 	}
 }
@@ -444,12 +430,11 @@ func (m model) View() string {
 
 func PanelNewRegister() *cobra.Command {
 	return &cobra.Command{
-		Use:   "new_panel",
+		Use:   "register_panel",
 		Short: "New Panel Register",
 		Run: func(cmd *cobra.Command, args []string) {
 
 			p := tea.NewProgram(newModel())
-
 			if _, err := p.Run(); err != nil {
 				fmt.Println("Error running program:", err)
 				os.Exit(1)
