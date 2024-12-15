@@ -21,7 +21,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/rand"
 )
 
 // type Model struct {
@@ -183,11 +182,10 @@ func getPaineisOld(unidade string) []string {
 }
 
 type model struct {
-	spinner   spinner.Model
-	results   []resultMsg
-	quitting  bool
-	confirmed bool
-	form      *huh.Form
+	spinner  spinner.Model
+	results  int
+	quitting bool
+	form     *huh.Form
 }
 type LocalAtendimento struct {
 	ID   string `json:"id"`
@@ -303,12 +301,20 @@ func getTipos() []string {
 	return options
 }
 
+func registerPanel(unidades string, paineis string, tipos string) {
+
+	_, err := utils.SaveConfig()
+	if err != nil {
+		logger.GetLogger().Errorf("erro ao carregar configuração do webhook: %v", err)
+	}
+}
+
 func newModel() model {
 
 	var unidadeSelected string
 	var tipoSelected string
 
-	const numLastResults = 5
+	var numLastResults int
 	s := spinner.New()
 	s.Style = spinnerStyle
 	form := huh.NewForm(
@@ -355,7 +361,7 @@ func newModel() model {
 
 	return model{
 		spinner: s,
-		results: make([]resultMsg, numLastResults),
+		results: numLastResults,
 		form:    form,
 	}
 }
@@ -393,7 +399,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "ctrl+c", "q":
 			m.quitting = true
 			return m, nil
-		case "n":
+		case "y", "n":
 			m.quitting = true
 			return m, tea.Quit
 		}
@@ -403,49 +409,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	var cmds []tea.Cmd
-
-	// process the form
 	form, cmd := m.form.Update(msg)
 	if f, ok := form.(*huh.Form); ok {
 		m.form = f
-		cmds = append(cmds, cmd)
 	}
 
 	if m.form.State == huh.StateCompleted {
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "enter":
-				return m, tea.Quit
-			}
+		btnConfirm := m.form.GetBool("btn_confirm")
+		if btnConfirm {
+			unidades := m.form.GetString("field_unidades")
+			paineis := m.form.GetString("field_paineis")
+			tipos := m.form.GetString("field_tipos")
+			registerPanel(unidades, paineis, tipos)
 		}
+		return m, tea.Quit
 	}
 
-	return m, tea.Batch(cmds...)
+	return m, cmd
+
 }
 
 func (m model) View() string {
 	var s string
 
 	if m.quitting {
-		if m.form.State == huh.StateCompleted {
-
-			// unidades := m.form.GetString("field_unidades")
-			// paineis := m.form.GetString("field_paineis")
-			// tipos := m.form.GetString("field_tipos")
-			btnConfirm := m.form.GetBool("btn_confirm")
-
-			// parei aqui. agora é criar a função para incluir no arquivo de configuração o painel selecionado
-			// tem que fazer o filtro no cnes da unidade na hora de buscar os paineis
-
-			if btnConfirm {
-				return "Registered panel. Press enter for exit"
-			} else {
-				return "Operation cancelled. Press enter for exit"
-			}
-
-		}
 		return m.form.View()
 	} else {
 		s += m.spinner.View() + " Loading data..."
@@ -470,32 +457,10 @@ func PanelNewRegister() *cobra.Command {
 
 			p := tea.NewProgram(newModel())
 
-			// Simulate activity
-			go func() {
-				for {
-					pause := time.Duration(rand.Int63n(899)+100) * time.Millisecond // nolint:gosec
-					time.Sleep(pause)
-
-					// Send the Bubble Tea program a message from outside the
-					// tea.Program. This will block until it is ready to receive
-					// messages.
-					p.Send(resultMsg{food: randomFood(), duration: pause})
-				}
-			}()
-
 			if _, err := p.Run(); err != nil {
 				fmt.Println("Error running program:", err)
 				os.Exit(1)
 			}
 		},
 	}
-}
-
-func randomFood() string {
-	food := []string{
-		"an apple", "a pear", "a gherkin", "a party gherkin",
-		"a kohlrabi", "some spaghetti", "tacos", "a currywurst", "some curry",
-		"a sandwich", "some peanut butter", "some cashews", "some ramen",
-	}
-	return food[rand.Intn(len(food))] // nolint:gosec
 }
