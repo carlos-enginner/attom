@@ -398,9 +398,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "esc", "ctrl+c", "q":
 			m.quitting = true
-			return m, nil
-		case "y", "n":
-			m.quitting = true
 			return m, tea.Quit
 		}
 	case spinner.TickMsg:
