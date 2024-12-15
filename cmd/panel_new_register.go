@@ -172,18 +172,10 @@ func getUnidades() []string {
 	return options
 }
 
-func getPaineisOld(unidade string) []string {
-
-	var options []string
-
-	options = []string{"Opção0" + unidade, "Opção00", "Opção000"}
-
-	return options
-}
-
 type model struct {
 	spinner  spinner.Model
-	results  int
+	timer    time.Time // Marca quando o spinner começou
+	timeout  time.Duration
 	quitting bool
 	form     *huh.Form
 }
@@ -314,7 +306,6 @@ func newModel() model {
 	var unidadeSelected string
 	var tipoSelected string
 
-	var numLastResults int
 	s := spinner.New()
 	s.Style = spinnerStyle
 	form := huh.NewForm(
@@ -361,12 +352,17 @@ func newModel() model {
 
 	return model{
 		spinner: s,
-		results: numLastResults,
 		form:    form,
+		timeout: 2 * time.Second,
+		timer:   time.Now(),
 	}
 }
 
 func (m model) Init() tea.Cmd {
+	// return m.spinner.Tick
+	// m.spinner = spinner.New(spinner.WithSpinner(spinner.Dot))
+	// m.timeout = 5 * time.Second // Define o tempo de exibição do spinner (5 segundos)
+	// m.timer = time.Now()
 	return m.spinner.Tick
 }
 
@@ -406,6 +402,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
+		if time.Since(m.timer) >= m.timeout {
+			m.quitting = true
+		}
 		return m, cmd
 	}
 
@@ -435,16 +434,10 @@ func (m model) View() string {
 	if m.quitting {
 		return m.form.View()
 	} else {
-		s += m.spinner.View() + " Loading data..."
+		if time.Since(m.timer) < m.timeout {
+			s += m.spinner.View() + " Loading data..."
+		}
 	}
-
-	// if !m.quitting {
-	// 	s += helpStyle.Render("Press any key to exit")
-	// }
-
-	// if m.quitting {
-	// 	s += "\n"
-	// }
 
 	return appStyle.Render(s)
 }
