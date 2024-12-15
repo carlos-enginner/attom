@@ -5,7 +5,9 @@ import (
 	"log"
 	"regexp"
 	"src/post_relay/config"
+	"src/post_relay/internal/logger"
 	"src/post_relay/models/environment"
+	"strings"
 
 	"github.com/Masterminds/semver"
 	"github.com/spf13/viper"
@@ -30,10 +32,12 @@ func LoadConfig() (environment.Config, error) {
 	return config, nil
 }
 
-func SaveConfig() (environment.Config, error) {
+func SaveConfig(cnes string, panel string, tipos string) (environment.Config, error) {
 	// Configuração do Viper
 	viper.SetConfigFile(config.FILE_ENVIRONMENT_APPLICATION)
 	viper.SetConfigType("toml")
+
+	logger.GetLogger().Info(cnes, panel, tipos)
 
 	// Tenta ler o arquivo de configuração
 	if err := viper.ReadInConfig(); err != nil {
@@ -46,19 +50,17 @@ func SaveConfig() (environment.Config, error) {
 		return environment.Config{}, fmt.Errorf("erro ao mapear as configurações para a struct: %v", err)
 	}
 
+	// divindo a string dos paneis
+	panelInfo := strings.Split(panel, " - ")
+
 	// Novo item para ser adicionado ao painel
 	newPanel := map[string]interface{}{
-		"cnes":        "2382857",
-		"description": "Novo Painel de Teste",
-		"type": []string{
-			"CONSULTA", "ESCUTA INICIAL", "CONSULTA ODONTOLÓGICA",
-			"AVALIAÇÃO DE ELEGIBILIDADE", "ATENÇÃO DOMICILIAR",
-			"ATENDIMENTO DE PROCEDIMENTO", "PRÉ-NATAL", "PUERPÉRIO",
-			"PUERICULTURA", "VACINAÇÃO", "ZIKA / MICROCEFALIA", "OBSERVAÇÃO",
-		},
+		"cnes":        OnlyNumber(cnes),
+		"description": "Novo Painel Registrado",
+		"type":        []string{tipos},
 		"queue": map[string]string{
-			"panelUuid":  "14c3c97e-805d-4128-b3cd-84159eac25f3_test",
-			"sectorUuid": "36efe62b-231c-421d-b446-3106908f97a7_test",
+			"panelUuid":  panelInfo[1],
+			"sectorUuid": panelInfo[3],
 		},
 	}
 
@@ -72,6 +74,13 @@ func SaveConfig() (environment.Config, error) {
 	}
 
 	return config, nil
+}
+
+func OnlyNumber(cnes string) string {
+	re := regexp.MustCompile(`\D+`)
+	cnesInfo := re.ReplaceAllString(cnes, "")
+
+	return cnesInfo
 }
 
 func Contains(value string, slice []string) bool {

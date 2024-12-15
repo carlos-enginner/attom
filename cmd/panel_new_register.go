@@ -192,7 +192,8 @@ func getPaineis(unidade string) []string {
 	}
 
 	// URL da API
-	endpoint := "http://painel.icsgo.com.br:7001/ws/v1/estabelecimentos/2569841/paineis"
+	cnes := utils.OnlyNumber(unidade)
+	endpoint := fmt.Sprintf(`http://painel.icsgo.com.br:7001/ws/v1/estabelecimentos/%s/paineis`, cnes)
 
 	// Cabeçalhos necessários
 	req, err := http.NewRequest("GET", endpoint, nil)
@@ -250,9 +251,13 @@ func getPaineis(unidade string) []string {
 	var options []string
 	for _, painel := range apiResp.Obj {
 		for _, local := range painel.LocalAtendimento {
-			options = append(options, fmt.Sprintf("%s - %s %s - %s", painel.NomePainel, painel.IDPainel, local.Nome, local.ID))
+			options = append(options, fmt.Sprintf("%s - %s - %s - %s", painel.NomePainel, painel.IDPainel, local.Nome, local.ID))
 
 		}
+	}
+
+	if len(options) == 0 {
+		options = append(options, fmt.Sprintf("%s", "Nenhum painel encontrado"))
 	}
 
 	return options
@@ -345,10 +350,6 @@ func newModel() model {
 }
 
 func (m model) Init() tea.Cmd {
-	// return m.spinner.Tick
-	// m.spinner = spinner.New(spinner.WithSpinner(spinner.Dot))
-	// m.timeout = 5 * time.Second // Define o tempo de exibição do spinner (5 segundos)
-	// m.timer = time.Now()
 	return m.spinner.Tick
 }
 
