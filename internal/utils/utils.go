@@ -5,7 +5,6 @@ import (
 	"log"
 	"regexp"
 	"src/post_relay/config"
-	"src/post_relay/internal/logger"
 	"src/post_relay/models/environment"
 	"strings"
 
@@ -32,55 +31,21 @@ func LoadConfig() (environment.Config, error) {
 	return config, nil
 }
 
-func SaveConfig(cnes string, panel string, tipos string) (environment.Config, error) {
-	// Configuração do Viper
-	viper.SetConfigFile(config.FILE_ENVIRONMENT_APPLICATION)
-	viper.SetConfigType("toml")
+func OnlyNumber(rawText string) string {
+	re := regexp.MustCompile(`\D+`)
+	newText := re.ReplaceAllString(rawText, "")
 
-	logger.GetLogger().Info(cnes, panel, tipos)
-
-	// Tenta ler o arquivo de configuração
-	if err := viper.ReadInConfig(); err != nil {
-		return environment.Config{}, fmt.Errorf("erro ao ler o arquivo de configuração: %v", err)
-	}
-
-	// Definir a struct de destino e fazer o mapeamento
-	var config environment.Config
-	if err := viper.Unmarshal(&config); err != nil {
-		return environment.Config{}, fmt.Errorf("erro ao mapear as configurações para a struct: %v", err)
-	}
-
-	// divindo a string dos paneis
-	panelInfo := strings.Split(panel, " - ")
-
-	// Novo item para ser adicionado ao painel
-	newPanel := map[string]interface{}{
-		"cnes":        OnlyNumber(cnes),
-		"description": "Novo Painel Registrado",
-		"type":        []string{tipos},
-		"queue": map[string]string{
-			"panelUuid":  panelInfo[1],
-			"sectorUuid": panelInfo[3],
-		},
-	}
-
-	// Adicionando o novo item ao campo panels.items
-	existingPanels := viper.Get("panels.items").([]interface{})
-	viper.Set("panels.items", append(existingPanels, newPanel))
-
-	// // Salvando a configuração modificada
-	if err := viper.WriteConfig(); err != nil {
-		log.Fatalf("Erro ao salvar a configuração: %v", err)
-	}
-
-	return config, nil
+	newText = strings.TrimSpace(newText)
+	return newText
 }
 
-func OnlyNumber(cnes string) string {
-	re := regexp.MustCompile(`\D+`)
-	cnesInfo := re.ReplaceAllString(cnes, "")
+func OnlyText(rawText string) string {
+	re := regexp.MustCompile(`^\d+\s*-`)
+	newText := re.ReplaceAllString(rawText, "")
 
-	return cnesInfo
+	newText = strings.TrimSpace(newText)
+
+	return newText
 }
 
 func Contains(value string, slice []string) bool {
