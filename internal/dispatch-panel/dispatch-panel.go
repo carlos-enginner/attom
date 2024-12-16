@@ -113,7 +113,9 @@ func SendMessage(payload panels.APIPayload) error {
 		}
 	}
 
-	req, err := http.NewRequest("POST", apiConfig.API.Endpoint, bytes.NewBuffer(data))
+	endpoint := fmt.Sprintf("%s/filas/add", apiConfig.API.Endpoint)
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(data))
 	if trace != nil {
 		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 	}
