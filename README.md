@@ -129,9 +129,9 @@ O projeto foi compilado para Windows, mas funciona em Linux. Em Windows funciona
   init             Generates a .config/environment.toml file
   install_service  Installs the service in Windows Services for automatic execution
   prepare_database Prepares the database for asynchronous notifications.
+  register_panel   New Panel Register
   remove_service   Remove the application on Windows Service
   start            Application start
-  update           Application update service
   version          Show version application
 ```
 
