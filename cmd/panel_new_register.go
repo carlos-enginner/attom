@@ -52,6 +52,7 @@ func getUnidades() []string {
 
 func getPaineis(cnes string) []string {
 
+	cnes = "2569841"
 	panels, err := registerpanel.GetPaineis(cnes)
 	if err != nil {
 		log.Fatalf("Error retrieving paneis: %v", err)
@@ -84,6 +85,8 @@ func getTipos() []string {
 
 	if len(tipos) == 0 {
 		return append(options, "nenhum registro encontrado")
+	} else {
+		options = append(options, "0 - TODOS")
 	}
 
 	for _, tipo := range tipos {

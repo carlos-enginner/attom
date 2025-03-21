@@ -55,7 +55,7 @@ func GetUnidades() ([]Unidade, error) {
 	conn, err := db.Connect()
 	// Conectar ao banco de dados
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
+		log.Fatal("Error connecting to database: - GetUnidades", err)
 	}
 	defer conn.Close(context.Background())
 
@@ -118,7 +118,7 @@ func GetTipos() ([]Tipo, error) {
 	conn, err := db.Connect()
 	// Conectar ao banco de dados
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
+		log.Fatal("Error connecting to database - GetTipos:", err)
 	}
 	defer conn.Close(context.Background())
 
@@ -154,6 +154,8 @@ order by
 		}
 		// Adicionando a unidade ao slice
 		tipos = append(tipos, tipo)
+
+		environment.PainelTypes = append(environment.PainelTypes, tipo.Descricao)
 	}
 
 	// Verificando se houve erro durante a iteração das linhas
@@ -260,10 +262,19 @@ func SavePanel(cnes string, panel string, tipo string) (environment.Config, erro
 	panelInfo := strings.Split(panel, " - ")
 	tipo = utils.OnlyText(tipo)
 
+	// por default pega o painel informado, se não pega o geral
+	descriptionPanel := fmt.Sprintf("Painel %s registrado", tipo)
+	typePanel := []string{tipo}
+
+	if tipo == "TODOS" {
+		descriptionPanel = "Painel UNIFICADO registrado"
+		typePanel = environment.PainelTypes
+	}
+
 	newPanel := map[string]interface{}{
 		"cnes":        utils.OnlyNumber(cnes),
-		"description": "Novo painel registrado",
-		"type":        []string{tipo},
+		"description": descriptionPanel,
+		"type":        typePanel,
 		"queue": map[string]string{
 			"panelUuid":  panelInfo[1],
 			"sectorUuid": panelInfo[3],

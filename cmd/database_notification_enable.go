@@ -17,7 +17,7 @@ func DatabaseNotificationEnableCmd() *cobra.Command {
 			conn, err := db.Connect()
 			// Conectar ao banco de dados
 			if err != nil {
-				log.Fatal("Error connecting to database:", err)
+				log.Fatal("Error connecting to database: DatabaseNotificationEnableCmd", err)
 			}
 			defer conn.Close(context.Background())
 

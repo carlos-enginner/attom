@@ -70,7 +70,7 @@ func StartNotifications() {
 	conn, err := Connect()
 	// Conectar ao banco de dados
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
+		log.Fatal("Error connecting to database: StartNotifications", err)
 	}
 	defer conn.Close(context.Background())
 

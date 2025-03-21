@@ -21,6 +21,9 @@ type Panels struct {
 	Items []PanelItem `toml:"items"`
 }
 
+// Define type for panels (exames, consultas e etc)
+var PainelTypes []string
+
 // API define as configurações de API
 type API struct {
 	Endpoint string `toml:"endpoint"`
