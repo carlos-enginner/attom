@@ -50,3 +50,4 @@ desktop.ini       # Windows
 # Arquivos gerados por testes (exemplo: cobertura de testes)
 *.coverprofile
 *.testprofile
+.qodo

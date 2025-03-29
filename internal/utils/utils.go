@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"regexp"
 	"src/post_relay/config"
 	"src/post_relay/models/environment"
@@ -13,16 +14,13 @@ import (
 )
 
 func LoadConfig() (environment.Config, error) {
-	// Configuração do Viper
 	viper.SetConfigFile(config.FILE_ENVIRONMENT_APPLICATION)
 	viper.SetConfigType("toml")
 
-	// Tenta ler o arquivo de configuração
 	if err := viper.ReadInConfig(); err != nil {
 		return environment.Config{}, fmt.Errorf("erro ao ler o arquivo de configuração: %v", err)
 	}
 
-	// Definir a struct de destino e fazer o mapeamento
 	var config environment.Config
 	if err := viper.Unmarshal(&config); err != nil {
 		return environment.Config{}, fmt.Errorf("erro ao mapear as configurações para a struct: %v", err)
@@ -34,40 +32,33 @@ func LoadConfig() (environment.Config, error) {
 func OnlyNumber(rawText string) string {
 	re := regexp.MustCompile(`\D+`)
 	newText := re.ReplaceAllString(rawText, "")
-
 	newText = strings.TrimSpace(newText)
+
 	return newText
 }
 
 func OnlyText(rawText string) string {
 	re := regexp.MustCompile(`^\d+\s*-`)
 	newText := re.ReplaceAllString(rawText, "")
-
 	newText = strings.TrimSpace(newText)
 
 	return newText
 }
 
 func Contains(value string, slice []string) bool {
+
+	if reflect.TypeOf(slice).Kind() != reflect.Slice {
+		fmt.Println("Erro: O argumento passado não é um slice!")
+		return false
+	}
+
 	for _, item := range slice {
-		if item == value {
+		if strings.EqualFold(strings.TrimSpace(item), value) {
 			return true
 		}
 	}
-	return false
-}
 
-func Substr(s string, start, end int) string {
-	if start < 0 {
-		start = 0
-	}
-	if end > len(s) {
-		end = len(s)
-	}
-	if start > end {
-		return ""
-	}
-	return s[start:end]
+	return false
 }
 
 func ToString(value float64) string {
@@ -86,18 +77,14 @@ func VersionIsGreaterThan(latestVersion string) bool {
 		log.Fatalf("Erro ao parse da versão mais recente: %v", err)
 	}
 
-	// Compara as versões
 	return latest.GreaterThan(current)
 }
 
 func ExtractVersionFromURL(url string) (string, error) {
-	// Expressão regular para encontrar o padrão de versão (vX.Y.Z)
 	re := regexp.MustCompile(`v(\d+\.\d+\.\d+)`)
 
-	// Tenta encontrar a versão na URL
 	matches := re.FindStringSubmatch(url)
 
-	// Se encontrar a versão, retorna ela, caso contrário retorna erro
 	if len(matches) > 1 {
 		return matches[1], nil
 	}

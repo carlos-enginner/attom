@@ -1,0 +1,25 @@
+sudo nano /etc/systemd/system/attom.service
+
+[Unit]
+Description=Attom Service - Send backoffice attendance for ESUS
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/atom
+ExecStart=/opt/atom/attom start
+User=root
+Group=nogroup
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+sudo nano /etc/systemd/system/attom.service
+
+sudo systemctl daemon-reload
+
+sudo systemctl enable attom.service
+
+sudo systemctl start attom.service
+
+sudo systemctl status attom.service

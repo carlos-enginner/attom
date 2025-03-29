@@ -47,8 +47,8 @@ func MakePayload(notificationPayload string) (panels.APIPayload, error) {
 		return panels.APIPayload{}, err
 	}
 
-	painelQueue, err := associations.LoadPainel(environment.Panels, cnes, localChamada)
-	if err != nil {
+	painelQueue := associations.LoadPainel(environment.Panels, cnes, localChamada)
+	if painelQueue == nil {
 		return panels.APIPayload{}, err
 	}
 
@@ -114,6 +114,10 @@ func SendMessage(payload panels.APIPayload) error {
 	}
 
 	endpoint := fmt.Sprintf("%s/filas/add", apiConfig.API.Endpoint)
+
+	if apiConfig.Application.HttpDebug {
+		endpoint = apiConfig.API.Endpoint
+	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(data))
 	if trace != nil {

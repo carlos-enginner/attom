@@ -1,13 +1,12 @@
 package associations
 
 import (
-	"fmt"
 	"src/post_relay/internal/logger"
 	"src/post_relay/internal/utils"
 	"src/post_relay/models/environment"
 )
 
-func LoadPainel(painel environment.Panels, cnes string, localChamada string) (*environment.Queue, error) {
+func LoadPainel(painel environment.Panels, cnes string, localChamada string) *environment.Queue {
 
 	logger.GetLogger().Info("Associations.LoadPainel.start")
 
@@ -17,14 +16,13 @@ func LoadPainel(painel environment.Panels, cnes string, localChamada string) (*e
 			continue
 		}
 
-		if !utils.Contains(localChamada, painel.Type) {
-			continue
+		if utils.Contains(localChamada, painel.Type) {
+			return &painel.Queue
 		}
-
-		return &painel.Queue, nil
 	}
 
 	logger.GetLogger().Infof("Associations.LoadPainel.data - [cnes: %s local_chamada: %s])", cnes, localChamada)
+	logger.GetLogger().Errorf("nenhum painel de %s foi encontrado configurado na unidade %s. Por favor, verificar os campos: cnes e type", localChamada, cnes)
 
-	return nil, fmt.Errorf("nenhum painel de %s foi encontrado configurado na unidade %s. Por favor, verificar os campos: cnes e type", localChamada, cnes)
+	return nil
 }
