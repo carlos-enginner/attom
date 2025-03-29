@@ -6,3 +6,7 @@ type APIPayload struct {
 	IdPainel           string      `json:"idPainel"`
 	IdLocalAtendimento string      `json:"idLocalAtendimento"`
 }
+
+func (payload APIPayload) IsValid() bool {
+	return payload.NomePaciente != "" && payload.IdPainel != "" && payload.IdLocalAtendimento != ""
+}

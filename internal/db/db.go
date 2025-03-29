@@ -68,13 +68,11 @@ func EnableNotify(conn *pgx.Conn) error {
 
 func StartNotifications() {
 	conn, err := Connect()
-	// Conectar ao banco de dados
 	if err != nil {
 		log.Fatal("Error connecting to database:", err)
 	}
 	defer conn.Close(context.Background())
 
-	// Escutar notificações
 	if err := ListenForNotifications(conn); err != nil {
 		log.Fatal("Error listening for notifications:", err)
 	}
@@ -82,7 +80,7 @@ func StartNotifications() {
 	log := logger.GetLogger()
 
 	for {
-		// Esperar por notificações
+		// Waiting notification
 		notification, err := conn.WaitForNotification(context.Background())
 		if err != nil {
 			log.Fatal("Error waiting for notification:", err)
@@ -90,15 +88,13 @@ func StartNotifications() {
 
 		if json.Valid([]byte(notification.Payload)) {
 
-			// Enviar para API
-			payload, err := dispatchpanel.MakePayload(notification.Payload)
-			if err != nil {
-				log.Errorln("Error:", err)
-				return
+			payload, _ := dispatchpanel.MakePayload(notification.Payload)
+			if !payload.IsValid() {
+				continue
 			}
 
 			if err := dispatchpanel.SendMessage(payload); err != nil {
-				log.Errorln("Error sending to API:", err)
+				log.Errorf("Error sending to API:", err)
 			} else {
 				log.Info("Notification sent to API successfully!")
 			}
