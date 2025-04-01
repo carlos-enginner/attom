@@ -86,6 +86,7 @@ func getTipos() []string {
 		return append(options, "nenhum registro encontrado")
 	}
 
+	options = append(options, "0 - TODOS")
 	for _, tipo := range tipos {
 		options = append(options, fmt.Sprintf("%d - %s", tipo.Codigo, tipo.Descricao))
 	}
@@ -140,7 +141,7 @@ func newModel() model {
 
 			huh.NewSelect[string]().
 				Height(8).
-				Title("2. Unidade de saúde").
+				Title("2. Unidades de saúde no e-SUS PEC").
 				Key("field_unidades").
 				Value(&unidadeSelected).
 				OptionsFunc(func() []huh.Option[string] {

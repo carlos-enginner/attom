@@ -10,3 +10,20 @@ type APIPayload struct {
 func (payload APIPayload) IsValid() bool {
 	return payload.NomePaciente != "" && payload.IdPainel != "" && payload.IdLocalAtendimento != ""
 }
+
+type TypeItem struct {
+	Codigo    int64
+	Descricao string
+}
+
+type TypesPanels struct {
+	items []TypeItem
+}
+
+func (tp *TypesPanels) GetAll() []TypeItem {
+	return tp.items
+}
+
+func (tp *TypesPanels) SetItems(items []TypeItem) {
+	tp.items = items
+}

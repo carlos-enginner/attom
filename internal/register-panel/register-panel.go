@@ -13,6 +13,7 @@ import (
 	"src/post_relay/internal/logger"
 	"src/post_relay/internal/utils"
 	"src/post_relay/models/environment"
+	"src/post_relay/models/panels"
 	"strings"
 	"time"
 
@@ -45,10 +46,7 @@ type Unidade struct {
 	NomeMunicipio string
 }
 
-type Tipo struct {
-	Codigo    int64
-	Descricao string
-}
+var panelTypes = &panels.TypesPanels{}
 
 func GetUnidades() ([]Unidade, error) {
 
@@ -113,7 +111,7 @@ func GetUnidades() ([]Unidade, error) {
 	return unidades, nil
 }
 
-func GetTipos() ([]Tipo, error) {
+func GetTipos() ([]panels.TypeItem, error) {
 
 	conn, err := db.Connect()
 	// Conectar ao banco de dados
@@ -122,7 +120,6 @@ func GetTipos() ([]Tipo, error) {
 	}
 	defer conn.Close(context.Background())
 
-	// Definindo a consulta SQL para buscar as unidades de saúde
 	sql := `select
 	t.co_tipo_atend_prof codigo,
 	t.no_tipo_atend_prof descricao
@@ -131,37 +128,31 @@ from
 order by
 	co_tipo_atend_prof`
 
-	// Executando a consulta e obtendo os resultados
 	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
-		// Logando o erro caso a consulta falhe
 		logger.GetLogger().Errorf("could not execute SQL query: %v", err)
 		return nil, fmt.Errorf("could not execute SQL query: %v", err)
 	}
 	defer rows.Close()
 
-	// Criando um slice para armazenar as unidades
-	var tipos []Tipo
+	var tipos []panels.TypeItem
 
-	// Iterando pelas linhas retornadas e populando o slice
 	for rows.Next() {
-		var tipo Tipo
+		var tipo panels.TypeItem
 		err := rows.Scan(&tipo.Codigo, &tipo.Descricao)
 		if err != nil {
-			// Logando erro de scan
 			logger.GetLogger().Errorf("could not scan row: %v", err)
 			return nil, fmt.Errorf("could not scan row: %v", err)
 		}
-		// Adicionando a unidade ao slice
 		tipos = append(tipos, tipo)
 	}
 
-	// Verificando se houve erro durante a iteração das linhas
 	if err := rows.Err(); err != nil {
-		// Logando o erro de iteração
 		logger.GetLogger().Errorf("error during rows iteration: %v", err)
 		return nil, fmt.Errorf("error during rows iteration: %v", err)
 	}
+
+	panelTypes.SetItems(tipos)
 
 	return tipos, nil
 }
@@ -256,22 +247,38 @@ func SavePanel(cnes string, panel string, tipo string) (environment.Config, erro
 		return environment.Config{}, fmt.Errorf("erro ao mapear as configurações para a struct: %v", err)
 	}
 
-	// formatting texts
 	panelInfo := strings.Split(panel, " - ")
 	tipo = utils.OnlyText(tipo)
 
-	newPanel := map[string]interface{}{
-		"cnes":        utils.OnlyNumber(cnes),
-		"description": "Novo painel registrado",
-		"type":        []string{tipo},
-		"queue": map[string]string{
-			"panelUuid":  panelInfo[1],
-			"sectorUuid": panelInfo[3],
-		},
-	}
+	if tipo == "TODOS" {
+		for _, tipo := range panelTypes.GetAll() {
+			newPanel := map[string]interface{}{
+				"cnes":        utils.OnlyNumber(cnes),
+				"description": fmt.Sprintf("Painel %s adicionado", tipo.Descricao),
+				"type":        []string{tipo.Descricao},
+				"queue": map[string]string{
+					"panelUuid":  panelInfo[1],
+					"sectorUuid": panelInfo[3],
+				},
+			}
 
-	existingPanels := viper.Get("panels.items").([]interface{})
-	viper.Set("panels.items", append(existingPanels, newPanel))
+			existingPanels := viper.Get("panels.items").([]interface{})
+			viper.Set("panels.items", append(existingPanels, newPanel))
+		}
+	} else {
+		newPanel := map[string]interface{}{
+			"cnes":        utils.OnlyNumber(cnes),
+			"description": fmt.Sprintf("Painel %s adicionado", tipo),
+			"type":        []string{tipo},
+			"queue": map[string]string{
+				"panelUuid":  panelInfo[1],
+				"sectorUuid": panelInfo[3],
+			},
+		}
+
+		existingPanels := viper.Get("panels.items").([]interface{})
+		viper.Set("panels.items", append(existingPanels, newPanel))
+	}
 
 	if err := viper.WriteConfig(); err != nil {
 		log.Fatalf("Erro ao salvar a configuração: %v", err)

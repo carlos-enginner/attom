@@ -23,9 +23,10 @@ type Panels struct {
 
 // API define as configurações de API
 type API struct {
-	Endpoint string `toml:"endpoint"`
-	Token    string `toml:"token"`
-	IBGE     string `toml:"ibge"`
+	Endpoint    string `toml:"endpoint"`
+	Token       string `toml:"token"`
+	IBGE        string `toml:"ibge"`
+	DumpRequest string `toml:"dumprequest"`
 }
 
 // Database define as configurações de conexão com o banco de dados

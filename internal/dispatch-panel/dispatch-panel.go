@@ -115,8 +115,8 @@ func SendMessage(payload panels.APIPayload) error {
 
 	endpoint := fmt.Sprintf("%s/filas/add", apiConfig.API.Endpoint)
 
-	if apiConfig.Application.HttpDebug {
-		endpoint = apiConfig.API.Endpoint
+	if apiConfig.API.DumpRequest != "" {
+		endpoint = apiConfig.API.DumpRequest
 	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(data))
