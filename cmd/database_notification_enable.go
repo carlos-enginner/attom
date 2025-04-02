@@ -3,13 +3,15 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"src/post_relay/internal/db"
+	"src/post_relay/internal/logger"
 
 	"github.com/spf13/cobra"
 )
 
 func DatabaseNotificationEnableCmd() *cobra.Command {
+	log := logger.GetLogger()
+
 	return &cobra.Command{
 		Use:   "prepare_database",
 		Short: "Prepares the database for asynchronous notifications.",
@@ -17,13 +19,13 @@ func DatabaseNotificationEnableCmd() *cobra.Command {
 			conn, err := db.Connect()
 			// Conectar ao banco de dados
 			if err != nil {
-				log.Fatal("Error connecting to database:", err)
+				log.Infof("Error connecting to database:", err)
 			}
 			defer conn.Close(context.Background())
 
 			// Habilitar notificações
 			if err := db.EnableNotify(conn); err != nil {
-				log.Fatal("Error enabling notifications:", err)
+				log.Infof("Error enabling notifications:", err)
 			}
 
 			fmt.Println("Notifications enabled successfully.")

@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"src/post_relay/config"
 	dispatchpanel "src/post_relay/internal/dispatch-panel"
@@ -67,17 +66,18 @@ func EnableNotify(conn *pgx.Conn) error {
 }
 
 func StartNotifications() {
+
+	log := logger.GetLogger()
+
 	conn, err := Connect()
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
+		log.Infof("Error connecting to database:", err)
 	}
 	defer conn.Close(context.Background())
 
 	if err := ListenForNotifications(conn); err != nil {
-		log.Fatal("Error listening for notifications:", err)
+		log.Infof("Error listening for notifications:", err)
 	}
-
-	log := logger.GetLogger()
 
 	for {
 		// Waiting notification

@@ -14,7 +14,6 @@ func init() {
 	rootCmd.AddCommand(ServiceInstall())
 	rootCmd.AddCommand(DatabaseNotificationEnableCmd())
 	rootCmd.AddCommand(DatabaseNotificationListenCmd())
-	// rootCmd.AddCommand(ApplicationSelfUpdate())
 	rootCmd.AddCommand(ApplicationGetVersion())
 	rootCmd.AddCommand(PanelNewRegister())
 }

@@ -50,10 +50,12 @@ var panelTypes = &panels.TypesPanels{}
 
 func GetUnidades() ([]Unidade, error) {
 
+	log := logger.GetLogger()
+
 	conn, err := db.Connect()
 	// Conectar ao banco de dados
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
+		log.Infof("Error connecting to database:", err)
 	}
 	defer conn.Close(context.Background())
 
@@ -113,10 +115,10 @@ func GetUnidades() ([]Unidade, error) {
 
 func GetTipos() ([]panels.TypeItem, error) {
 
+	log := logger.GetLogger()
 	conn, err := db.Connect()
-	// Conectar ao banco de dados
 	if err != nil {
-		log.Fatal("Error connecting to database:", err)
+		log.Infof("Error connecting to database:", err)
 	}
 	defer conn.Close(context.Background())
 

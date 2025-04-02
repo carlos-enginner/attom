@@ -5,6 +5,9 @@ import (
 	"log"
 	"os"
 	"src/post_relay/models/environment"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
@@ -13,89 +16,23 @@ import (
 func newConfig() *environment.Config {
 	return &environment.Config{
 		Application: environment.Application{
-			TimeoutConnection: 10,
+			TimeoutConnection: 10 * time.Second,
+			HttpDebug:         false,
 		},
 		API: environment.API{
-			Endpoint: "https://example.com/api",
-			Token:    "your-api-token",
+			Endpoint: "http://painel.icsgo.com.br:7001/ws/v1",
+			Token:    "58a846d58a0670ea3c3ad54ec5069130",
 			IBGE:     "1234567",
 		},
 		Database: environment.Database{
 			Host:     "localhost",
-			Port:     5432,
-			User:     "user",
+			Port:     5433,
+			User:     "postgres",
 			Password: "password",
-			DBName:   "example_db",
+			DBName:   "esus",
 		},
 		Panels: environment.Panels{
-			Items: []environment.PanelItem{
-				{
-					Cnes:        "2382857",
-					Description: "Painel description example",
-					Type: []string{"CONSULTA", "ESCUTA INICIAL", "CONSULTA ODONTOLÓGICA", "AVALIAÇÃO DE ELEGIBILIDADE",
-						"ATENÇÃO DOMICILIAR", "ATENDIMENTO DE PROCEDIMENTO", "PRÉ-NATAL",
-						"PUERPÉRIO", "PUERICULTURA", "VACINAÇÃO",
-						"ZIKA / MICROCEFALIA", "OBSERVAÇÂO"},
-					Queue: environment.Queue{
-						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
-					},
-				},
-				{
-					Cnes:        "2382857",
-					Description: "Painel name 1",
-					Type: []string{"CONSULTA", "ESCUTA INICIAL", "CONSULTA ODONTOLÓGICA", "AVALIAÇÃO DE ELEGIBILIDADE",
-						"ATENÇÃO DOMICILIAR", "ATENDIMENTO DE PROCEDIMENTO", "PRÉ-NATAL",
-						"PUERPÉRIO", "PUERICULTURA", "VACINAÇÃO",
-						"ZIKA / MICROCEFALIA", "OBSERVAÇÂO"},
-					Queue: environment.Queue{
-						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
-					},
-				},
-				{
-					Cnes:        "2382857",
-					Description: "Painel name 1",
-					Type: []string{"CONSULTA", "ESCUTA INICIAL", "CONSULTA ODONTOLÓGICA", "AVALIAÇÃO DE ELEGIBILIDADE",
-						"ATENÇÃO DOMICILIAR", "ATENDIMENTO DE PROCEDIMENTO", "PRÉ-NATAL",
-						"PUERPÉRIO", "PUERICULTURA", "VACINAÇÃO",
-						"ZIKA / MICROCEFALIA", "OBSERVAÇÂO"},
-					Queue: environment.Queue{
-						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
-					},
-				},
-				{
-					Cnes:        "2382857",
-					Description: "Painel description example",
-					Type: []string{"CONSULTA", "ESCUTA INICIAL", "CONSULTA ODONTOLÓGICA", "AVALIAÇÃO DE ELEGIBILIDADE",
-						"ATENÇÃO DOMICILIAR", "ATENDIMENTO DE PROCEDIMENTO", "PRÉ-NATAL",
-						"PUERPÉRIO", "PUERICULTURA", "VACINAÇÃO",
-						"ZIKA / MICROCEFALIA", "OBSERVAÇÂO"},
-					Queue: environment.Queue{
-						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
-					},
-				},
-				{
-					Cnes:        "2382857",
-					Description: "Painel description example",
-					Type: []string{"CONSULTA", "ESCUTA INICIAL", "CONSULTA ODONTOLÓGICA", "AVALIAÇÃO DE ELEGIBILIDADE",
-						"ATENÇÃO DOMICILIAR", "ATENDIMENTO DE PROCEDIMENTO", "PRÉ-NATAL",
-						"PUERPÉRIO", "PUERICULTURA", "VACINAÇÃO",
-						"ZIKA / MICROCEFALIA", "OBSERVAÇÂO"},
-					Queue: environment.Queue{
-						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
-					},
-				},
-				{
-					Cnes:        "2382857",
-					Description: "Painel description example",
-					Type: []string{"CONSULTA", "ESCUTA INICIAL", "CONSULTA ODONTOLÓGICA", "AVALIAÇÃO DE ELEGIBILIDADE",
-						"ATENÇÃO DOMICILIAR", "ATENDIMENTO DE PROCEDIMENTO", "PRÉ-NATAL",
-						"PUERPÉRIO", "PUERICULTURA", "VACINAÇÃO",
-						"ZIKA / MICROCEFALIA", "OBSERVAÇÂO"},
-					Queue: environment.Queue{
-						PanelUuid: "eb6e9c6b-a196-42ed-8847-752da50bf95c", SectorUuid: "631da7f0-fe75-44fc-85c0-bafb56ab12d1",
-					},
-				},
-			},
+			Items: []environment.PanelItem{},
 		},
 	}
 }
@@ -107,33 +44,41 @@ func ApplicationInitCmd() *cobra.Command {
 		Long:  `This command asks for user input and generates a TOML configuration file with the provided settings.`,
 		Run: func(cmd *cobra.Command, args []string) {
 
-			// Criando a configuração
 			config := newConfig()
 
-			// Coletando dados da API
-			fmt.Print("Enter the API endpoint: ")
-			fmt.Scanln(&config.API.Endpoint)
-			fmt.Print("Enter the IBGE code: ")
-			fmt.Scanln(&config.API.IBGE)
-			fmt.Print("Enter the token: ")
-			fmt.Scanln(&config.API.Token)
+			var input string
+			fmt.Printf("Enter the IBGE code (default: %s): ", config.API.IBGE)
+			fmt.Scanln(&input)
+			if strings.TrimSpace(input) != "" {
+				config.API.IBGE = input
+			}
 
-			// Coletando dados do banco de dados
-			fmt.Print("Enter the database host: ")
-			fmt.Scanln(&config.Database.Host)
-			fmt.Print("Enter the database port: ")
-			fmt.Scanln(&config.Database.Port)
-			fmt.Print("Enter the database user: ")
-			fmt.Scanln(&config.Database.User)
-			fmt.Print("Enter the database password: ")
-			fmt.Scanln(&config.Database.Password)
-			fmt.Print("Enter the database name: ")
-			fmt.Scanln(&config.Database.DBName)
+			input = ""
+			fmt.Printf("Enter the database user (default: %s): ", config.Database.User)
+			fmt.Scanln(&input)
+			if strings.TrimSpace(input) != "" {
+				config.Database.User = input
+			}
 
-			// Pergunta se a aplicação está pronta
-			fmt.Print("Is the application ready (true/false)? ")
+			input = ""
+			fmt.Printf("Enter the database password (default: %s): ", config.Database.Password)
+			fmt.Scanln(&input)
+			if strings.TrimSpace(input) != "" {
+				config.Database.Password = input
+			}
 
-			// Verificando e criando a pasta "config" se não existir
+			input = ""
+			fmt.Printf("Enter the database port (default: %d): ", config.Database.Port)
+			fmt.Scanln(&input)
+			if strings.TrimSpace(input) != "" {
+				port, err := strconv.Atoi(input)
+				if err != nil {
+					log.Printf("Invalid input for port, using default value %d\n", config.Database.Port)
+				} else {
+					config.Database.Port = port
+				}
+			}
+
 			if _, err := os.Stat("config"); os.IsNotExist(err) {
 				err := os.Mkdir("config", 0755)
 				if err != nil {
@@ -148,7 +93,6 @@ func ApplicationInitCmd() *cobra.Command {
 			}
 			defer file.Close()
 
-			fmt.Println("\nGerando o template environment.toml com valores padrão...")
 			if err := toml.NewEncoder(file).Encode(config); err != nil {
 				log.Fatalf("Erro ao escrever configuração no arquivo TOML: %v", err)
 			}
