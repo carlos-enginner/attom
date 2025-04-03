@@ -10,12 +10,16 @@ import (
 	"src/post_relay/internal/utils"
 	"time"
 
+	"src/post_relay/models/panels"
+
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
+
+var panelActive = &panels.PainelActive{}
 
 var (
 	spinnerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("63"))
@@ -43,6 +47,7 @@ func getUnidades() []string {
 		return append(options, "nenhum registro encontrado")
 	}
 
+	options = append(options, "0000000 - TODAS")
 	for _, unidade := range unidades {
 		options = append(options, unidade.NuCnes+" - "+unidade.NomeUnidade)
 	}
@@ -64,9 +69,14 @@ func getPaineis(cnes string) []string {
 	}
 
 	for _, painel := range panels.Obj {
-		for _, local := range painel.LocalAtendimento {
-			options = append(options, fmt.Sprintf("%s - %s - %s - %s", painel.NomePainel, painel.IDPainel, local.Nome, local.ID))
 
+		logger.GetLogger().Infof("GetPaineis.unidade: %v", painel)
+
+		for index, local := range painel.LocalAtendimento {
+
+			text := fmt.Sprintf("%d - %s - %s - %s", (index + 1), painel.NuCnes, utils.ToUpperCase(painel.NomePainel), utils.ToUpperCase(local.Nome))
+
+			options = append(options, text)
 		}
 	}
 
@@ -115,13 +125,20 @@ func newModel() model {
 	newConfirm := huh.NewConfirm().
 		Key("btn_confirm").
 		Validate(func(b bool) error {
+			tipoSelected = utils.OnlyText(tipoSelected)
+			if tipoSelected != "TODOS" {
+				if !utils.ContainsWord(painelSelected, tipoSelected) {
+					return errors.New("preenchimento incorreto, não é possível seguir, desculpe. O painel ativo na API não é igual ao tipo escolhido")
+				}
+			}
+
 			if painelSelected == "nenhum registro encontrado" {
 				return errors.New("preenchimento incorreto, não é possível seguir, desculpe")
 			}
 			return nil
 		}).
 		TitleFunc(func() string {
-			return "Confirma registro do painel: " + tipoSelected + "?"
+			return "Confirma o registro do painel?"
 		}, &tipoSelected).Affirmative("Sim").Negative("Não")
 
 	form := huh.NewForm(

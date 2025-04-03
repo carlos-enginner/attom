@@ -14,48 +14,24 @@ import (
 	"src/post_relay/internal/utils"
 	"src/post_relay/models/environment"
 	"src/post_relay/models/panels"
-	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
-type LocalAtendimento struct {
-	ID   string `json:"id"`
-	Nome string `json:"nome"`
-}
-
-type Painel struct {
-	Descricao        string             `json:"descricao"`
-	IDPainel         string             `json:"idPainel"`
-	NomePainel       string             `json:"nomePainel"`
-	DuracaoChamada   int                `json:"duracaoChamada"`
-	LocalAtendimento []LocalAtendimento `json:"localAtendimento"`
-}
-
-type APIResponse struct {
-	Error bool     `json:"error"`
-	Msg   string   `json:"msg"`
-	Obj   []Painel `json:"obj"`
-}
-
-type Unidade struct {
-	NuCnes        string
-	NomeUnidade   string
-	NomeMunicipio string
-}
-
 var panelTypes = &panels.TypesPanels{}
+var panelUnidades = &panels.Unidades{}
+var panelActive = &panels.PainelActive{}
+var activesResponse = &panels.ActivesResponse{}
 
-func GetUnidades() ([]Unidade, error) {
+func GetUnidades() ([]panels.Unidade, error) {
 
 	log := logger.GetLogger()
 
 	conn, err := db.Connect()
-	// Conectar ao banco de dados
 	if err != nil {
-		log.Infof("Error connecting to database:", err)
+		log.Infof("Error connecting to database: %s", err)
 	}
 	defer conn.Close(context.Background())
 
@@ -64,7 +40,6 @@ func GetUnidades() ([]Unidade, error) {
 		return nil, err
 	}
 
-	// Definindo a consulta SQL para buscar as unidades de saúde
 	sql := fmt.Sprintf(`select
 			tus.nu_cnes,
 			upper(tus.no_unidade_saude_filtro) nome_unidade,
@@ -78,39 +53,33 @@ func GetUnidades() ([]Unidade, error) {
 		order by
 			tus.no_unidade_saude;`, config.API.IBGE)
 
-	// Executando a consulta e obtendo os resultados
 	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
-		// Logando o erro caso a consulta falhe
 		logger.GetLogger().Errorf("could not execute SQL query: %v", err)
 		return nil, fmt.Errorf("could not execute SQL query: %v", err)
 	}
 	defer rows.Close()
 
-	// Criando um slice para armazenar as unidades
-	var unidades []Unidade
+	var listaUnidades []panels.Unidade
 
-	// Iterando pelas linhas retornadas e populando o slice
 	for rows.Next() {
-		var unidade Unidade
+		var unidade panels.Unidade
 		err := rows.Scan(&unidade.NuCnes, &unidade.NomeUnidade, &unidade.NomeMunicipio)
 		if err != nil {
-			// Logando erro de scan
 			logger.GetLogger().Errorf("could not scan row: %v", err)
 			return nil, fmt.Errorf("could not scan row: %v", err)
 		}
-		// Adicionando a unidade ao slice
-		unidades = append(unidades, unidade)
+		listaUnidades = append(listaUnidades, unidade)
 	}
 
-	// Verificando se houve erro durante a iteração das linhas
 	if err := rows.Err(); err != nil {
-		// Logando o erro de iteração
 		logger.GetLogger().Errorf("error during rows iteration: %v", err)
 		return nil, fmt.Errorf("error during rows iteration: %v", err)
 	}
 
-	return unidades, nil
+	panelUnidades.SetItems(listaUnidades)
+
+	return listaUnidades, nil
 }
 
 func GetTipos() ([]panels.TypeItem, error) {
@@ -118,7 +87,7 @@ func GetTipos() ([]panels.TypeItem, error) {
 	log := logger.GetLogger()
 	conn, err := db.Connect()
 	if err != nil {
-		log.Infof("Error connecting to database:", err)
+		log.Infof("Error connecting to database: %s", err)
 	}
 	defer conn.Close(context.Background())
 
@@ -159,7 +128,70 @@ order by
 	return tipos, nil
 }
 
-func GetPaineis(unidade string) (APIResponse, error) {
+// Função para fazer a requisição HTTP e processar a resposta
+func fetchPanels(endpoint string, apiConfig environment.Config) (panels.ActivesResponse, error) {
+	logger.GetLogger().Infof("GetPaineis.endpoint %v", endpoint)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		logger.GetLogger().Errorf("Erro ao criar requisição: %v", err)
+		return panels.ActivesResponse{}, err
+	}
+
+	req.Header = http.Header{
+		"Content-Type":  {"application/json"},
+		"Authorization": {apiConfig.API.Token},
+		"ibge":          {apiConfig.API.IBGE},
+	}
+
+	client := &http.Client{
+		Timeout: 20 * time.Second,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		if urlErr, ok := err.(*url.Error); ok && urlErr.Timeout() {
+			logger.GetLogger().WithFields(logrus.Fields{
+				"error": err,
+				"type":  "timeout",
+			}).Error("Timeout ao tentar conectar com a API")
+		} else {
+			logger.GetLogger().WithFields(logrus.Fields{
+				"error": err,
+				"type":  "connection",
+			}).Error("Erro ao enviar requisição para API")
+		}
+		return panels.ActivesResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logger.GetLogger().Errorf("Erro ao ler a resposta: %v", err)
+		return panels.ActivesResponse{}, err
+	}
+
+	logger.GetLogger().Infof("GetPaineis.return.API: %v", string(body))
+
+	if resp.StatusCode != http.StatusOK {
+		logger.GetLogger().Errorf("Erro: Status code %d", resp.StatusCode)
+		return panels.ActivesResponse{}, fmt.Errorf("erro na API, status code %d", resp.StatusCode)
+	}
+
+	var apiResp panels.ActivesResponse
+	if err := json.Unmarshal(body, &apiResp); err != nil {
+		logger.GetLogger().Errorf("Erro ao deserializar o JSON: %v", err)
+		return panels.ActivesResponse{}, err
+	}
+
+	if apiResp.Error {
+		logger.GetLogger().Errorf("Erro na resposta da API: %s", apiResp.Msg)
+		return panels.ActivesResponse{}, fmt.Errorf("erro da API: %s", apiResp.Msg)
+	}
+
+	return apiResp, nil
+}
+
+func GetPaineisOld(unidade string) (panels.ActivesResponse, error) {
 
 	time.Sleep(1 * time.Second)
 
@@ -171,12 +203,23 @@ func GetPaineis(unidade string) (APIResponse, error) {
 	logger.GetLogger().Infof("GetPaineis.unidade: %v", string(unidade))
 
 	// URL da API
-	cnes := utils.OnlyNumber(unidade)
+	// cnes := utils.OnlyNumber(unidade)
+	cnes := utils.OnlyText(unidade)
+
 	endpoint := fmt.Sprintf(`%s/estabelecimentos/%s/paineis`, apiConfig.API.Endpoint, cnes)
+
+	if cnes == "TODAS" {
+		for _, unidade := range panelUnidades.GetAll() {
+			fmt.Println(unidade.NuCnes)
+		}
+
+	} else {
+		// cnes := utils.OnlyNumber(unidade)
+	}
 
 	logger.GetLogger().Infof("GetPaineis.endpoint %v", string(endpoint))
 
-	// Cabeçalhos necessários
+	// heads
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		logger.GetLogger().Infof("Erro ao criar requisição: %v", err)
@@ -207,7 +250,6 @@ func GetPaineis(unidade string) (APIResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	// Lendo a resposta
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.GetLogger().Infof("Erro ao ler a resposta: %v", err)
@@ -215,18 +257,15 @@ func GetPaineis(unidade string) (APIResponse, error) {
 
 	logger.GetLogger().Infof("GetPaineis.return.API: %v", string(body))
 
-	// Verificando o status da resposta
 	if resp.StatusCode != http.StatusOK {
 		logger.GetLogger().Infof("Erro: Status code %d", resp.StatusCode)
 	}
 
-	// Mapear a resposta para a estrutura Go
-	var apiResp APIResponse
+	var apiResp panels.ActivesResponse
 	if err := json.Unmarshal(body, &apiResp); err != nil {
 		logger.GetLogger().Infof("Erro ao deserializar o JSON: %v", err)
 	}
 
-	// Verificando se houve erro no campo 'error' da resposta
 	if apiResp.Error {
 		logger.GetLogger().Infof("Erro na resposta da API: %s", apiResp.Msg)
 	}
@@ -234,11 +273,65 @@ func GetPaineis(unidade string) (APIResponse, error) {
 	return apiResp, nil
 }
 
-func SavePanel(cnes string, panel string, tipo string) (environment.Config, error) {
+func GetPaineis(unidade string) (panels.ActivesResponse, error) {
+	time.Sleep(1 * time.Second)
+
+	apiConfig, err := utils.LoadConfig()
+	if err != nil {
+		logger.GetLogger().Errorf("Erro ao carregar configuração do webhook: %v", err)
+		return panels.ActivesResponse{}, err
+	}
+
+	logger.GetLogger().Infof("GetPaineis.unidade: %v", unidade)
+
+	cnes := utils.OnlyNumber(unidade)
+	endpoint := fmt.Sprintf(`%s/estabelecimentos/%s/paineis`, apiConfig.API.Endpoint, cnes)
+
+	if panelActive.RequestGetAll(unidade) {
+		var allPanels []panels.PainelActive
+
+		for _, unidade := range panelUnidades.GetAll() {
+			endpoint := fmt.Sprintf(`%s/estabelecimentos/%s/paineis`, apiConfig.API.Endpoint, unidade.NuCnes)
+
+			panelsResp, err := fetchPanels(endpoint, apiConfig)
+			if err != nil {
+				logger.GetLogger().Errorf("Erro ao buscar painéis para unidade %s: %v", unidade.NuCnes, err)
+				continue
+			}
+
+			for i := range panelsResp.Obj {
+				panelsResp.Obj[i].NuCnes = unidade.NuCnes
+			}
+
+			allPanels = append(allPanels, panelsResp.Obj...)
+		}
+
+		activesResponse.SetItems(allPanels)
+
+		return panels.ActivesResponse{
+			Error: false,
+			Msg:   "Consulta concluída",
+			Obj:   allPanels,
+		}, nil
+	}
+
+	panelsResp, err := fetchPanels(endpoint, apiConfig)
+	if err != nil {
+		logger.GetLogger().Errorf("Erro ao buscar painéis para unidade %s: %v", cnes, err)
+	}
+
+	for i := range panelsResp.Obj {
+		panelsResp.Obj[i].NuCnes = cnes
+	}
+
+	return panelsResp, err
+}
+
+func SavePanel(cnes string, panel string, nomePanel string) (environment.Config, error) {
 	viper.SetConfigFile(config.FILE_ENVIRONMENT_APPLICATION)
 	viper.SetConfigType("toml")
 
-	logger.GetLogger().Info(cnes, panel, tipo)
+	logger.GetLogger().Info(cnes, panel, nomePanel)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return environment.Config{}, fmt.Errorf("erro ao ler o arquivo de configuração: %v", err)
@@ -249,37 +342,65 @@ func SavePanel(cnes string, panel string, tipo string) (environment.Config, erro
 		return environment.Config{}, fmt.Errorf("erro ao mapear as configurações para a struct: %v", err)
 	}
 
-	panelInfo := strings.Split(panel, " - ")
-	tipo = utils.OnlyText(tipo)
+	cnes = utils.OnlyNumber(cnes)
 
-	if tipo == "TODOS" {
-		for _, tipo := range panelTypes.GetAll() {
-			newPanel := map[string]interface{}{
-				"cnes":        utils.OnlyNumber(cnes),
-				"description": fmt.Sprintf("Painel %s adicionado", tipo.Descricao),
-				"type":        []string{tipo.Descricao},
-				"queue": map[string]string{
-					"panelUuid":  panelInfo[1],
-					"sectorUuid": panelInfo[3],
-				},
+	painelsActives := activesResponse.GetPanelsActives()
+
+	for _, panelActive := range painelsActives {
+		sectors := panelActive.LocalAtendimento
+
+		if cnes == panelActive.NuCnes {
+			for _, sector := range sectors {
+
+				if nomePanel == "0 - TODOS" {
+					newPanel := map[string]interface{}{
+						"cnes":        panelActive.NuCnes,
+						"description": fmt.Sprintf("Painel %s adicionado", utils.ToUpperCase(sector.Nome)),
+						"type":        []string{utils.ToUpperCase(sector.Nome)},
+						"queue": map[string]string{
+							"panelUuid":  panelActive.IDPainel,
+							"sectorUuid": sector.ID,
+						},
+					}
+
+					existingPanels := viper.Get("panels.items").([]interface{})
+					viper.Set("panels.items", append(existingPanels, newPanel))
+				} else {
+					if utils.ToUpperCase(sector.Nome) == nomePanel {
+						newPanel := map[string]interface{}{
+							"cnes":        panelActive.NuCnes,
+							"description": fmt.Sprintf("Painel %s adicionado", utils.ToUpperCase(sector.Nome)),
+							"type":        []string{utils.ToUpperCase(sector.Nome)},
+							"queue": map[string]string{
+								"panelUuid":  panelActive.IDPainel,
+								"sectorUuid": sector.ID,
+							},
+						}
+
+						existingPanels := viper.Get("panels.items").([]interface{})
+						viper.Set("panels.items", append(existingPanels, newPanel))
+					}
+				}
 			}
-
-			existingPanels := viper.Get("panels.items").([]interface{})
-			viper.Set("panels.items", append(existingPanels, newPanel))
-		}
-	} else {
-		newPanel := map[string]interface{}{
-			"cnes":        utils.OnlyNumber(cnes),
-			"description": fmt.Sprintf("Painel %s adicionado", tipo),
-			"type":        []string{tipo},
-			"queue": map[string]string{
-				"panelUuid":  panelInfo[1],
-				"sectorUuid": panelInfo[3],
-			},
 		}
 
-		existingPanels := viper.Get("panels.items").([]interface{})
-		viper.Set("panels.items", append(existingPanels, newPanel))
+		if panelActive.RequestGetAll(cnes) {
+			for _, sector := range sectors {
+				newPanel := map[string]interface{}{
+					"cnes":        panelActive.NuCnes,
+					"description": fmt.Sprintf("Painel %s adicionado", utils.ToUpperCase(sector.Nome)),
+					"type":        []string{utils.ToUpperCase(sector.Nome)},
+					"queue": map[string]string{
+						"panelUuid":  panelActive.IDPainel,
+						"sectorUuid": sector.ID,
+					},
+				}
+
+				existingPanels := viper.Get("panels.items").([]interface{})
+				viper.Set("panels.items", append(existingPanels, newPanel))
+			}
+		}
+
 	}
 
 	if err := viper.WriteConfig(); err != nil {

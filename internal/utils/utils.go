@@ -65,6 +65,15 @@ func ToString(value float64) string {
 	return fmt.Sprintf("%.0f", value)
 }
 
+func ToUpperCase(s string) string {
+	return strings.ToUpper(s)
+}
+
+func ContainsWord(texto, palavra string) bool {
+	re := regexp.MustCompile(`\b` + regexp.QuoteMeta(palavra) + `\b`)
+	return re.MatchString(texto)
+}
+
 func VersionIsGreaterThan(latestVersion string) bool {
 	currentVersion := config.Version
 	current, err := semver.NewVersion(currentVersion)
