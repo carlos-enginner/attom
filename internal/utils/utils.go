@@ -45,6 +45,12 @@ func OnlyText(rawText string) string {
 	return newText
 }
 
+func OnlyCnes(rawText string) string {
+	rawText = strings.TrimSpace(rawText)
+	re := regexp.MustCompile(`^\d{7}`)
+	return re.FindString(rawText)
+}
+
 func Contains(value string, slice []string) bool {
 
 	if reflect.TypeOf(slice).Kind() != reflect.Slice {

@@ -40,7 +40,7 @@ func GetUnidades() ([]panels.Unidade, error) {
 		return nil, err
 	}
 
-	sql := fmt.Sprintf(`select
+	sql := `select
 			tus.nu_cnes,
 			upper(tus.no_unidade_saude_filtro) nome_unidade,
 			tl.no_localidade  nome_municipio
@@ -49,13 +49,14 @@ func GetUnidades() ([]panels.Unidade, error) {
 		inner join tb_localidade tl on
 			tus.co_localidade_endereco = tl.co_localidade
 		where
-			tl.co_ibge in('%s')
+			tl.co_ibge in('%')
 		order by
-			tus.no_unidade_saude;`, config.API.IBGE)
+			tus.no_unidade_saude;`
 
+	var ibge = config.API
 	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
-		logger.GetLogger().Errorf("could not execute SQL query: %v", err)
+		logger.GetLogger().Errorf("could not execute SQL query: %v %s", err, ibge)
 		return nil, fmt.Errorf("could not execute SQL query: %v", err)
 	}
 	defer rows.Close()
@@ -284,7 +285,7 @@ func GetPaineis(unidade string) (panels.ActivesResponse, error) {
 
 	logger.GetLogger().Infof("GetPaineis.unidade: %v", unidade)
 
-	cnes := utils.OnlyNumber(unidade)
+	cnes := utils.OnlyCnes(unidade)
 	endpoint := fmt.Sprintf(`%s/estabelecimentos/%s/paineis`, apiConfig.API.Endpoint, cnes)
 
 	if panelActive.RequestGetAll(unidade) {
